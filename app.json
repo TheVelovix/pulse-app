@@ -8,7 +8,8 @@
     "scheme": "pulse",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.velovix.pulse"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,11 +18,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "predictiveBackGestureEnabled": false,
+      "package": "com.velovix.pulse"
     },
     "plugins": [
       "expo-router",
@@ -34,11 +32,25 @@
             "imageWidth": 76
           }
         }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "llow $(PRODUCT_NAME) to access your Face ID biometric data."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7261c69f-4c3b-4f08-9f61-ea406c89793c"
+      }
+    },
+    "platforms": ["android"]
   }
 }
