@@ -11,8 +11,10 @@ export default function TabLayout() {
   const [loaded] = useFonts({
     "Poppins-Regular": require("../fonts/Poppins-Regular.ttf"),
     "Poppins-Medium": require("../fonts/Poppins-Medium.ttf"),
+    "Poppins-SemiBold": require("../fonts/Poppins-SemiBold.ttf"),
     "Poppins-Bold": require("../fonts/Poppins-Bold.ttf"),
   });
+  if(!loaded) return null;
   return (
     <GestureHandlerRootView>
       <SessionProvider>

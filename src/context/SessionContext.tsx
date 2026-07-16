@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import { toast } from "sonner-native";
 import { getTokens, setTokens } from "../lib/lib";
 
@@ -13,6 +13,16 @@ interface User {
   id: string;
   email: string;
   subscriptionPlan: SubscriptionPlan;
+}
+
+interface LoginBody{
+  email:string,
+  password:string,
+}
+
+interface SignUpBody{
+  confirmPassword:string,
+  promotionalCode?:string
 }
 
 interface SessionContextType {
@@ -33,19 +43,18 @@ export default function SessionProvider({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
+  const pathname = usePathname()
   async function fetchSession() {
     try {
       const { accessToken, refreshToken } = await getTokens();
-      let res = await fetch("/api/auth/me", {
+      let res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "X-Device-Type": "mobile",
         },
       });
-
       if (res.status === 401) {
-        const refreshRes = await fetch("/api/refresh", {
+        const refreshRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`, {
           method: "POST",
           headers: {
             RefreshToken: refreshToken!,
@@ -55,25 +64,28 @@ export default function SessionProvider({
         if (refreshRes.ok) {
           const data = await res.json();
           await setTokens(data.accessToken, data.refreshToken);
-          res = await fetch("/api/auth/me", {
+          res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/me`, {
             headers: {
               Authorization: `Bearer ${data.accessToken}`,
               "X-Device-Type": "mobile",
             },
           });
         } else {
+          // If refresh token auth fails the user object can still have data on it so set it to null
           setUser(null);
           return;
         }
       }
-
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+        if(pathname === "/Login" || pathname === "/Signup" || pathname === "/") {
+          router.replace("/(tabs)/Dashboard")
+        }
       } else {
         setUser(null);
       }
-    } catch {
+    } catch{
       setUser(null);
     } finally {
       setLoading(false);
@@ -84,7 +96,7 @@ export default function SessionProvider({
     fetchSession();
   }, []);
 
-  async function login(credentials: { email: string; password: string }) {
+  async function login(credentials: LoginBody) {
     const res = await fetch(
       `${process.env.EXPO_PUBLIC_BACKEND}/api/auth/login`,
       {
@@ -96,7 +108,6 @@ export default function SessionProvider({
         body: JSON.stringify(credentials),
       },
     );
-    console.log(res);
     if (!res.ok) {
       const contentType = res.headers.get("content-type");
       if (contentType?.includes("text/plain")) {
@@ -107,16 +118,20 @@ export default function SessionProvider({
         toast.error("Unknown error occurred.");
       }
     } else {
+      const data: {accessToken:string, refreshToken:string} = await res.json()
+      await setTokens(data.accessToken, data.refreshToken)
       await fetchSession();
-      toast("Login successful!");
+      toast.success("Login successful!");
       setTimeout(() => router.replace("/(tabs)/Dashboard"), 1000);
     }
   }
+  async function signUp(credentials:SignUpBody){
 
+  }
   async function logout() {
     const { accessToken, refreshToken } = await getTokens();
 
-    await fetch("/api/auth/logout", {
+    await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/logout`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${accessToken}`,

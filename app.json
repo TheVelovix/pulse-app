@@ -39,7 +39,11 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "llow $(PRODUCT_NAME) to access your Face ID biometric data."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -51,6 +55,8 @@
         "projectId": "7261c69f-4c3b-4f08-9f61-ea406c89793c"
       }
     },
-    "platforms": ["android"]
+    "platforms": [
+      "android"
+    ]
   }
 }

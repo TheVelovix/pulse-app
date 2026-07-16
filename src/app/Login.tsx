@@ -39,7 +39,6 @@ export default function LogIn() {
           password: credentials.password,
         });
       } catch (e) {
-        console.log(e);
         if (e instanceof Error) {
           if (e.message === "invalid-credentials") {
             setError("Invalid credentials.");
@@ -62,6 +61,8 @@ export default function LogIn() {
                 onChangeText={(newVal) => updateCredentials("email", newVal)}
                 placeholder="Email here..."
                 placeholderTextColor="#ffffff67"
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
             <View>
@@ -72,6 +73,8 @@ export default function LogIn() {
                 onChangeText={(newVal) => updateCredentials("password", newVal)}
                 placeholder="Password here..."
                 placeholderTextColor="#ffffff67"
+                secureTextEntry
+                autoCapitalize="none"
               />
             </View>
           </View>
@@ -81,7 +84,7 @@ export default function LogIn() {
             disabled={requestPending}
             style={[authStyles.authButton, requestPending && { opacity: 0.7 }]}
           >
-            <Text style={[authStyles.labels, { fontSize: 18 }]}>
+            <Text style={[authStyles.buttonLabels, { fontSize: 18 }]}>
               {!requestPending ? "Log in" : "Logging in..."}
             </Text>
           </TouchableOpacity>
