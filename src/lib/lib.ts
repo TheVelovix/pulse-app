@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 
 export async function getTokens() {
   const [accessToken, refreshToken] = await Promise.all([
@@ -22,7 +22,6 @@ export async function fetchWithAuth(
   input: RequestInfo | URL,
   init: RequestInit = {},
 ): Promise<Response> {
-  const router = useRouter();
   const { accessToken, refreshToken } = await getTokens();
   const options = {
     ...init,
@@ -34,13 +33,11 @@ export async function fetchWithAuth(
   };
 
   let res = await fetch(input, options);
-
   if (res.status === 401) {
-    const refreshRes = await fetch("/api/refresh", {
+    const refreshRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`, {
       method: "POST",
       headers: options.headers,
     });
-
     if (!refreshRes.ok) {
       router.replace("/Login");
       return res;

@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { toast } from "sonner-native";
 
 export default function SignUp() {
   const [credentials, setCredentials] = useState({
@@ -36,6 +37,55 @@ export default function SignUp() {
         setError("Please fill out the form.");
         return;
       }
+      if(credentials.password !== credentials.confirmPassword){
+        setError("Passwords do not match.");
+        return;
+      }
+      if(error) setError("");
+      try{
+        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/signup`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Device-Type":"mobile" },
+              body: JSON.stringify({ ...credentials, turnstileToken:"" }),
+            });
+        if (!res.ok) {
+          const contentType = res.headers.get("Content-Type") ?? "";
+          if (contentType.includes("text/plain")) {
+            const responseText = await res.text();
+            switch (responseText) {
+              case "invalid-email":
+                setError("Invalid email address.");
+                break;
+              case "user-already-exists":
+                setError("Email already in use.");
+                break;
+              case "captcha-failed":
+                setError("CAPTCHA verification failed. Please try again.");
+                break;
+              case "invalid-promotional-code":
+                setError("Invalid Promotional Code");
+                break;
+              default:
+                setError("Unknown error occurred.");
+            }
+          } else if (contentType.includes("application/problem+json")) {
+            const problem = await res.json();
+            const messages: string[] = problem.errors
+              ? Object.values(problem.errors as Record<string, string[]>).flat()
+              : [];
+            setError(messages[0] ?? problem.title ?? "Unknown error occurred.");
+          } else {
+            setError("Unknown error occurred.");
+          }
+        } else {
+          toast("Account created successfully!");
+          await session.refetch();
+          router.replace("/Dashboard")
+          }
+      }catch(e){
+        console.log(e)
+      }
+
     });
   }
   return (
@@ -69,7 +119,7 @@ export default function SignUp() {
             <View>
               <Text style={authStyles.labels}>Confirm Password</Text>
               <TextInput
-                value={credentials.password}
+                value={credentials.confirmPassword}
                 style={authStyles.inputs}
                 onChangeText={(newVal) => updateCredentials("confirmPassword", newVal)}
                 placeholderTextColor="#ffffff67"
@@ -80,7 +130,7 @@ export default function SignUp() {
             <View>
               <Text style={authStyles.labels}>Promotional Code (Optional)</Text>
               <TextInput
-                value={credentials.password}
+                value={credentials.promotionalCode}
                 style={authStyles.inputs}
                 onChangeText={(newVal) => updateCredentials("promotionalCode", newVal)}
                 placeholderTextColor="#ffffff67"

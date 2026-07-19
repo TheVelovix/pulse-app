@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import { useFonts } from "expo-font";
 
-export default function TabLayout() {
+export default function RootLayout() {
   const insets = useSafeAreaInsets();
   const [loaded] = useFonts({
     "Poppins-Regular": require("../fonts/Poppins-Regular.ttf"),

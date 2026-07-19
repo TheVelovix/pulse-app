@@ -53,14 +53,14 @@ export default function SessionProvider({
           "X-Device-Type": "mobile",
         },
       });
-      if (res.status === 401) {
+      if (res.status === 401 && refreshToken) {
         const refreshRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`, {
           method: "POST",
           headers: {
             RefreshToken: refreshToken!,
             "X-Device-Type": "mobile",
           },
-        });
+        })
         if (refreshRes.ok) {
           const data = await res.json();
           await setTokens(data.accessToken, data.refreshToken);
@@ -124,9 +124,6 @@ export default function SessionProvider({
       toast.success("Login successful!");
       setTimeout(() => router.replace("/(tabs)/Dashboard"), 1000);
     }
-  }
-  async function signUp(credentials:SignUpBody){
-
   }
   async function logout() {
     const { accessToken, refreshToken } = await getTokens();
