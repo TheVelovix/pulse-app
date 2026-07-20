@@ -15,20 +15,21 @@ interface User {
   subscriptionPlan: SubscriptionPlan;
 }
 
-interface LoginBody{
-  email:string,
-  password:string,
+interface LoginBody {
+  email: string;
+  password: string;
 }
 
-interface SignUpBody{
-  confirmPassword:string,
-  promotionalCode?:string
+interface SignUpBody {
+  confirmPassword: string;
+  promotionalCode?: string;
 }
 
 interface SessionContextType {
   user: User | null;
   loading: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
+  login: (credentials: LoginBody) => Promise<void>;
+  signup: (credentials: SignUpBody) => Promise<void>;
   logout: () => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -43,7 +44,7 @@ export default function SessionProvider({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname()
+  const pathname = usePathname();
   async function fetchSession() {
     try {
       const { accessToken, refreshToken } = await getTokens();
@@ -54,13 +55,16 @@ export default function SessionProvider({
         },
       });
       if (res.status === 401 && refreshToken) {
-        const refreshRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`, {
-          method: "POST",
-          headers: {
-            RefreshToken: refreshToken!,
-            "X-Device-Type": "mobile",
+        const refreshRes = await fetch(
+          `${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`,
+          {
+            method: "POST",
+            headers: {
+              RefreshToken: refreshToken,
+              "X-Device-Type": "mobile",
+            },
           },
-        })
+        );
         if (refreshRes.ok) {
           const data = await res.json();
           await setTokens(data.accessToken, data.refreshToken);
@@ -79,13 +83,17 @@ export default function SessionProvider({
       if (res.ok) {
         const data = await res.json();
         setUser(data);
-        if(pathname === "/Login" || pathname === "/Signup" || pathname === "/") {
-          router.replace("/(tabs)/Dashboard")
+        if (
+          pathname === "/Login" ||
+          pathname === "/Signup" ||
+          pathname === "/"
+        ) {
+          router.replace("/(tabs)/Dashboard");
         }
       } else {
         setUser(null);
       }
-    } catch{
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -118,11 +126,59 @@ export default function SessionProvider({
         toast.error("Unknown error occurred.");
       }
     } else {
-      const data: {accessToken:string, refreshToken:string} = await res.json()
-      await setTokens(data.accessToken, data.refreshToken)
+      const data: { accessToken: string; refreshToken: string } =
+        await res.json();
+      await setTokens(data.accessToken, data.refreshToken);
       await fetchSession();
       toast.success("Login successful!");
       setTimeout(() => router.replace("/(tabs)/Dashboard"), 1000);
+    }
+  }
+  async function signup(credentials: SignUpBody) {
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_BACKEND}/api/auth/signup`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Device-Type": "mobile",
+        },
+        body: JSON.stringify({ ...credentials, turnstileToken: "" }),
+      },
+    );
+    if (!res.ok) {
+      const contentType = res.headers.get("Content-Type") ?? "";
+      if (contentType.includes("text/plain")) {
+        const responseText = await res.text();
+        switch (responseText) {
+          case "invalid-email":
+            throw new Error("Invalid email address.");
+          case "user-already-exists":
+            throw new Error("Email already in use.");
+          case "captcha-failed":
+            throw new Error("CAPTCHA verification failed. Please try again.");
+          case "invalid-promotional-code":
+            throw new Error("Invalid Promotional Code");
+          default:
+            throw new Error("Unknown error occurred.");
+        }
+      } else if (contentType.includes("application/problem+json")) {
+        const problem = await res.json();
+        const messages: string[] = problem.errors
+          ? Object.values(problem.errors as Record<string, string[]>).flat()
+          : [];
+        throw new Error(
+          messages[0] ?? problem.title ?? "Unknown error occurred.",
+        );
+      } else {
+        throw new Error("Unknown error occurred.");
+      }
+    } else {
+      toast("Account created successfully!");
+      const data = await res.json();
+      await setTokens(data.accessToken, data.refreshToken);
+      await fetchSession();
+      router.replace("/Dashboard");
     }
   }
   async function logout() {
@@ -142,7 +198,7 @@ export default function SessionProvider({
 
   return (
     <SessionContext.Provider
-      value={{ user, loading, login, logout, refetch: fetchSession }}
+      value={{ user, loading, login, logout, refetch: fetchSession, signup }}
     >
       {children}
     </SessionContext.Provider>

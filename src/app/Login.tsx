@@ -92,7 +92,7 @@ export default function LogIn() {
 
           <View style={authStyles.br} />
           <Text style={[authStyles.labels, { textAlign: "center" }]}>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Text
               disabled={requestPending}
               onPress={() => {

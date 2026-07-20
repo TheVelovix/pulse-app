@@ -1,5 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
+import { toast } from "sonner-native";
 
 export async function getTokens() {
   const [accessToken, refreshToken] = await Promise.all([
@@ -23,28 +24,31 @@ export async function fetchWithAuth(
   init: RequestInit = {},
 ): Promise<Response> {
   const { accessToken, refreshToken } = await getTokens();
+  if (!accessToken || !refreshToken)
+    toast.error("You're not signed in to make this request.");
   const options = {
     ...init,
     headers: {
+      ...init.headers,
       Authorization: `Bearer ${accessToken}`,
       RefreshToken: refreshToken!,
       "X-Device-Type": "mobile",
     },
   };
-
   let res = await fetch(input, options);
   if (res.status === 401) {
-    const refreshRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`, {
-      method: "POST",
-      headers: options.headers,
-    });
+    const refreshRes = await fetch(
+      `${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`,
+      {
+        method: "POST",
+        headers: options.headers,
+      },
+    );
     if (!refreshRes.ok) {
       router.replace("/Login");
       return res;
     }
-
     res = await fetch(input, options);
   }
-
   return res;
 }

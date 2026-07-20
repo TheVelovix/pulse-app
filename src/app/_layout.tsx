@@ -1,5 +1,5 @@
 import { colors } from "@/constants/theme";
-import SessionProvider, { useSession } from "@/context/SessionContext";
+import SessionProvider from "@/context/SessionContext";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,7 +14,7 @@ export default function RootLayout() {
     "Poppins-SemiBold": require("../fonts/Poppins-SemiBold.ttf"),
     "Poppins-Bold": require("../fonts/Poppins-Bold.ttf"),
   });
-  if(!loaded) return null;
+  if (!loaded) return null;
   return (
     <GestureHandlerRootView>
       <SessionProvider>

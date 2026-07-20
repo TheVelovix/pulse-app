@@ -55,8 +55,6 @@
         "projectId": "7261c69f-4c3b-4f08-9f61-ea406c89793c"
       }
     },
-    "platforms": [
-      "android"
-    ]
+    "platforms": ["android"]
   }
 }

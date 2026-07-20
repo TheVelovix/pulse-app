@@ -11,14 +11,26 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { toast } from "sonner-native";
+import * as z from "zod";
 
+const SignupBody = z.object({
+  email: z.email({ error: "Invalid email" }),
+  password: z
+    .string()
+    .min(8, { error: "Password must be at least 8 characters long" })
+    .refine((val) => /[A-Z]/.test(val), {
+      error: "Password must contain at least one uppercase letter",
+    })
+    .refine((val) => /[^a-zA-Z0-9]/.test(val), {
+      error: "Password must contain at least one special character",
+    }),
+});
 export default function SignUp() {
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
-    confirmPassword:"",
-    promotionalCode:"",
+    confirmPassword: "",
+    promotionalCode: "",
   });
   function updateCredentials(key: string, value: string) {
     setCredentials((prev) => ({
@@ -33,59 +45,29 @@ export default function SignUp() {
   const [error, setError] = useState("");
   function handleSignUp() {
     startTransition(async () => {
-      if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
+      if (
+        !credentials.email ||
+        !credentials.password ||
+        !credentials.confirmPassword
+      ) {
         setError("Please fill out the form.");
         return;
       }
-      if(credentials.password !== credentials.confirmPassword){
+      if (credentials.password !== credentials.confirmPassword) {
         setError("Passwords do not match.");
         return;
       }
-      if(error) setError("");
-      try{
-        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/signup`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "X-Device-Type":"mobile" },
-              body: JSON.stringify({ ...credentials, turnstileToken:"" }),
-            });
-        if (!res.ok) {
-          const contentType = res.headers.get("Content-Type") ?? "";
-          if (contentType.includes("text/plain")) {
-            const responseText = await res.text();
-            switch (responseText) {
-              case "invalid-email":
-                setError("Invalid email address.");
-                break;
-              case "user-already-exists":
-                setError("Email already in use.");
-                break;
-              case "captcha-failed":
-                setError("CAPTCHA verification failed. Please try again.");
-                break;
-              case "invalid-promotional-code":
-                setError("Invalid Promotional Code");
-                break;
-              default:
-                setError("Unknown error occurred.");
-            }
-          } else if (contentType.includes("application/problem+json")) {
-            const problem = await res.json();
-            const messages: string[] = problem.errors
-              ? Object.values(problem.errors as Record<string, string[]>).flat()
-              : [];
-            setError(messages[0] ?? problem.title ?? "Unknown error occurred.");
-          } else {
-            setError("Unknown error occurred.");
-          }
-        } else {
-          toast("Account created successfully!");
-          await session.refetch();
-          router.replace("/Dashboard")
-          }
-      }catch(e){
-        console.log(e)
+      if (error) setError("");
+      try {
+        SignupBody.parse(credentials);
+        await session.signup(credentials);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          setError(e.issues[0].message);
+        } else if (e instanceof Error) {
+          setError(e.message);
+        }
       }
-
     });
   }
   return (
@@ -121,7 +103,9 @@ export default function SignUp() {
               <TextInput
                 value={credentials.confirmPassword}
                 style={authStyles.inputs}
-                onChangeText={(newVal) => updateCredentials("confirmPassword", newVal)}
+                onChangeText={(newVal) =>
+                  updateCredentials("confirmPassword", newVal)
+                }
                 placeholderTextColor="#ffffff67"
                 secureTextEntry
                 autoCapitalize="none"
@@ -132,7 +116,9 @@ export default function SignUp() {
               <TextInput
                 value={credentials.promotionalCode}
                 style={authStyles.inputs}
-                onChangeText={(newVal) => updateCredentials("promotionalCode", newVal)}
+                onChangeText={(newVal) =>
+                  updateCredentials("promotionalCode", newVal)
+                }
                 placeholderTextColor="#ffffff67"
                 secureTextEntry
                 autoCapitalize="none"
@@ -140,10 +126,28 @@ export default function SignUp() {
             </View>
           </View>
           <View style={styles.tosWrapper}>
-            <Text style={styles.tosMain}>By continuing you agree to our {" "}
-              <Text style={styles.underlined} onPress={() => router.push("/Tos")}>Terms of Service</Text>, {" "}
-              <Text style={styles.underlined} onPress={() => router.push("/PrivacyPolicy")}>Privacy Policy</Text> and {" "}
-              <Text style={styles.underlined} onPress={() => router.push("/RefundPolicy")}>Refund Policy</Text>
+            <Text style={styles.tosMain}>
+              By continuing you agree to our{" "}
+              <Text
+                style={styles.underlined}
+                onPress={() => router.push("/Tos")}
+              >
+                Terms of Service
+              </Text>
+              ,{" "}
+              <Text
+                style={styles.underlined}
+                onPress={() => router.push("/PrivacyPolicy")}
+              >
+                Privacy Policy
+              </Text>{" "}
+              and{" "}
+              <Text
+                style={styles.underlined}
+                onPress={() => router.push("/RefundPolicy")}
+              >
+                Refund Policy
+              </Text>
             </Text>
           </View>
           <TouchableOpacity
@@ -181,15 +185,15 @@ export default function SignUp() {
 }
 
 const styles = StyleSheet.create({
-  tosWrapper:{
-    marginTop:10,
+  tosWrapper: {
+    marginTop: 10,
   },
-  tosMain:{
-    color:'rgba(120, 120, 120)',
-    textAlign:'center',
-    lineHeight:20
+  tosMain: {
+    color: "rgba(120, 120, 120)",
+    textAlign: "center",
+    lineHeight: 20,
   },
-  underlined:{
-    textDecorationLine:"underline"
+  underlined: {
+    textDecorationLine: "underline",
   },
-})
+});

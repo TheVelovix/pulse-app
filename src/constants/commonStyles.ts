@@ -27,9 +27,9 @@ export const authStyles = StyleSheet.create({
   labels: {
     color: "white",
     fontFamily: "Poppins-Regular",
-    marginBottom:5
+    marginBottom: 5,
   },
-  buttonLabels:{
+  buttonLabels: {
     color: "white",
     fontFamily: "Poppins-Regular",
   },
@@ -68,62 +68,62 @@ export const authStyles = StyleSheet.create({
 });
 
 export const policyStyles = StyleSheet.create({
-  title:{
-    color:"white",
-    fontFamily:"Poppins-SemiBold",
-    marginTop:20,
-    fontSize:20
+  title: {
+    color: "white",
+    fontFamily: "Poppins-SemiBold",
+    marginTop: 20,
+    fontSize: 20,
   },
-  subTitle:{
-    color:'rgb(120, 120, 120)',
-    fontFamily:"Poppins-Regular",
-    marginBottom:10
+  subTitle: {
+    color: "rgb(120, 120, 120)",
+    fontFamily: "Poppins-Regular",
+    marginBottom: 10,
   },
-  policyWrapper:{
-    borderWidth:1,
-    borderColor:'rgb(150, 150, 150)',
-    borderRadius:10,
-    padding:20,
-    gap:20
+  policyWrapper: {
+    borderWidth: 1,
+    borderColor: "rgb(150, 150, 150)",
+    borderRadius: 10,
+    padding: 20,
+    gap: 20,
   },
-  sectionTitles:{
-    color:"white",
-    fontFamily:"Poppins-Medium"
+  sectionTitles: {
+    color: "white",
+    fontFamily: "Poppins-Medium",
   },
-  sectionText:{
-    color:"rgb(170, 170, 170)",
-    fontFamily:"Poppins-Regular"
+  sectionText: {
+    color: "rgb(170, 170, 170)",
+    fontFamily: "Poppins-Regular",
   },
-  sectionBorder:{
-    borderBottomColor:"rgb(150, 150, 150)",
-    borderBottomWidth:1
+  sectionBorder: {
+    borderBottomColor: "rgb(150, 150, 150)",
+    borderBottomWidth: 1,
   },
-  backButton:{
-    marginVertical:15,
-    marginHorizontal:"auto",
-    backgroundColor:colors.accent,
-    width:"90%",
-    borderRadius:50,
-    paddingVertical:10
+  backButton: {
+    marginVertical: 15,
+    marginHorizontal: "auto",
+    backgroundColor: colors.accent,
+    width: "90%",
+    borderRadius: 50,
+    paddingVertical: 10,
   },
-  buttonLabel:{
-    color:"white",
-    fontSize:18,
-    textAlign:"center",
-    fontFamily:"Poppins-Regular"
+  buttonLabel: {
+    color: "white",
+    fontSize: 18,
+    textAlign: "center",
+    fontFamily: "Poppins-Regular",
   },
-  smallBackButton:{
-    marginRight:"auto",
-    flexDirection:"row",
+  smallBackButton: {
+    marginRight: "auto",
+    flexDirection: "row",
     gap: 4,
-    padding:10,
-    borderRadius:50
+    padding: 10,
+    borderRadius: 50,
   },
-  smallButtonLabel:{
-    color:"white",
-    fontSize:14,
-    textAlign:"center",
-    fontFamily:"Poppins-Regular",
-    marginTop:2
-  }
-})
+  smallButtonLabel: {
+    color: "white",
+    fontSize: 14,
+    textAlign: "center",
+    fontFamily: "Poppins-Regular",
+    marginTop: 2,
+  },
+});
