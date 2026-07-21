@@ -1,6 +1,6 @@
 import { colors } from "@/constants/theme";
 import { fetchWithAuth } from "@/lib/lib";
-import { NewProjectBody, Project } from "@/types/Dashboard";
+import { NewProjectBody, NewProjectProps } from "@/types/Dashboard";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
   Modal,
@@ -11,11 +11,7 @@ import {
   TextInput,
   Pressable,
 } from "react-native";
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -26,9 +22,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { runOnJS } from "react-native-worklets";
 import { toast } from "sonner-native";
 import * as z from "zod";
+import Dragger from "./Dragger";
 
-const domainRegex =
-  /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$/;
+const domainRegex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$/;
 
 const domainSchema = z
   .string()
@@ -36,15 +32,7 @@ const domainSchema = z
   .max(253, "Domain is too long")
   .regex(domainRegex, "Enter a valid domain (e.g. example.com)");
 
-export default function NewProject({
-  isVisible,
-  onClose,
-  refetchProjects,
-}: {
-  isVisible: boolean;
-  onClose: () => void;
-  refetchProjects: () => Promise<Project[] | undefined>;
-}) {
+export default function NewProject({ isVisible, onClose, refetchProjects }: NewProjectProps) {
   const [body, setBody] = useState<NewProjectBody>({
     name: "",
     domain: "",
@@ -93,23 +81,27 @@ export default function NewProject({
         duration: fast ? 100 : 200,
         easing: Easing.inOut(Easing.ease),
       });
+      setBody({
+        name: "",
+        domain: "",
+      });
       setTimeout(() => onClose(), 200);
     },
     [isVisible],
   );
 
+  const [reqPending, startTransition] = useTransition();
   const context = useSharedValue(0);
   const panGesture = Gesture.Pan()
     .onStart(() => {
       context.value = translateY.value;
     })
-    .onUpdate((e) => {
+    .onUpdate(e => {
       const newY = context.value + e.translationY;
       translateY.value = Math.max(newY, dimensions.height * 0.1);
     })
-    .onEnd((e) => {
-      const shouldClose =
-        e.translationY > dimensions.height * 0.15 || e.velocityY > 800;
+    .onEnd(e => {
+      const shouldClose = e.translationY > dimensions.height * 0.15 || e.velocityY > 800;
       if (shouldClose) runOnJS(handleClose)(true);
       else {
         translateY.value = withTiming(dimensions.height * 0.1, {
@@ -117,17 +109,18 @@ export default function NewProject({
           easing: Easing.inOut(Easing.ease),
         });
       }
-    });
+    })
+    .enabled(!reqPending);
 
   const domainRef = useRef<TextInput>(null);
   const focusDomain = useCallback(() => {
     domainRef?.current?.focus();
-  }, []);
+  }, [domainRef, domainRef.current]);
 
   const [error, setError] = useState("");
   const handleInputChange = useCallback(
     (key: string, value: string) => {
-      setBody((prev) => ({
+      setBody(prev => ({
         ...prev,
         [key]: value,
       }));
@@ -136,7 +129,6 @@ export default function NewProject({
     [error],
   );
 
-  const [reqPending, startTransition] = useTransition();
   const createProject = useCallback(() => {
     startTransition(async () => {
       if (!body.name || !body.domain) {
@@ -145,16 +137,13 @@ export default function NewProject({
       }
       try {
         domainSchema.parse(body.domain);
-        const res = await fetchWithAuth(
-          `${process.env.EXPO_PUBLIC_BACKEND}/api/projects`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
+        const res = await fetchWithAuth(`${process.env.EXPO_PUBLIC_BACKEND}/api/projects`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(body),
+        });
         if (!res.ok) {
           const resText = await res.text();
           if (resText === "project-limit-reached") {
@@ -165,8 +154,12 @@ export default function NewProject({
           return;
         }
         toast.success("Project created successfully.");
+        setBody({
+          name: "",
+          domain: "",
+        });
+        await refetchProjects();
         handleClose();
-        refetchProjects();
       } catch (e) {
         if (e instanceof z.ZodError) {
           setError(e.issues[0].message);
@@ -193,7 +186,7 @@ export default function NewProject({
         <GestureHandlerRootView>
           <GestureDetector gesture={panGesture}>
             <Animated.View style={[sliderStyle]}>
-              <View style={styles.dragger} />
+              <Dragger />
               <Text style={styles.title}>Create Project</Text>
               {error && (
                 <Text
@@ -215,7 +208,7 @@ export default function NewProject({
                   <TextInput
                     style={styles.inputs}
                     value={body.name}
-                    onChangeText={(newVal) => handleInputChange("name", newVal)}
+                    onChangeText={newVal => handleInputChange("name", newVal)}
                     placeholder="Name here..."
                     returnKeyType="next"
                     onSubmitEditing={focusDomain}
@@ -227,9 +220,7 @@ export default function NewProject({
                     ref={domainRef}
                     style={styles.inputs}
                     value={body.domain}
-                    onChangeText={(newVal) =>
-                      handleInputChange("domain", newVal)
-                    }
+                    onChangeText={newVal => handleInputChange("domain", newVal)}
                     placeholder="example.com"
                     autoCapitalize="none"
                   />
@@ -239,12 +230,13 @@ export default function NewProject({
               <View style={styles.buttonsWrapper}>
                 <Pressable
                   disabled={reqPending}
-                  style={[styles.buttons, reqPending && { opacity: 0.7 }]}
-                  onPress={() => handleClose}
+                  style={({ pressed }) => [
+                    styles.buttons,
+                    (reqPending || pressed) && { opacity: 0.7 },
+                  ]}
+                  onPress={() => handleClose()}
                 >
-                  <Text style={[styles.labels, { color: colors.textMuted }]}>
-                    Cancel
-                  </Text>
+                  <Text style={[styles.labels, { color: colors.textMuted }]}>Cancel</Text>
                 </Pressable>
                 <Pressable
                   disabled={reqPending}
@@ -252,9 +244,7 @@ export default function NewProject({
                   style={({ pressed }) => [
                     styles.buttons,
                     {
-                      backgroundColor: pressed
-                        ? colors.accentHover
-                        : colors.accent,
+                      backgroundColor: pressed ? colors.accentHover : colors.accent,
                     },
                     reqPending && { opacity: 0.7 },
                   ]}
@@ -271,13 +261,6 @@ export default function NewProject({
 }
 
 const styles = StyleSheet.create({
-  dragger: {
-    width: 50,
-    height: 8,
-    backgroundColor: colors.textMuted,
-    borderRadius: 50,
-    marginHorizontal: "auto",
-  },
   title: {
     fontFamily: "Poppins-Medium",
     color: "white",

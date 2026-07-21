@@ -36,11 +36,7 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType | null>(null);
 
-export default function SessionProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -55,16 +51,13 @@ export default function SessionProvider({
         },
       });
       if (res.status === 401 && refreshToken) {
-        const refreshRes = await fetch(
-          `${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`,
-          {
-            method: "POST",
-            headers: {
-              RefreshToken: refreshToken,
-              "X-Device-Type": "mobile",
-            },
+        const refreshRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`, {
+          method: "POST",
+          headers: {
+            RefreshToken: refreshToken,
+            "X-Device-Type": "mobile",
           },
-        );
+        });
         if (refreshRes.ok) {
           const data = await res.json();
           await setTokens(data.accessToken, data.refreshToken);
@@ -83,11 +76,7 @@ export default function SessionProvider({
       if (res.ok) {
         const data = await res.json();
         setUser(data);
-        if (
-          pathname === "/Login" ||
-          pathname === "/Signup" ||
-          pathname === "/"
-        ) {
+        if (pathname === "/Login" || pathname === "/Signup" || pathname === "/") {
           router.replace("/(tabs)/Dashboard");
         }
       } else {
@@ -105,17 +94,14 @@ export default function SessionProvider({
   }, []);
 
   async function login(credentials: LoginBody) {
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_BACKEND}/api/auth/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Device-Type": "mobile",
-        },
-        body: JSON.stringify(credentials),
+    const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Device-Type": "mobile",
       },
-    );
+      body: JSON.stringify(credentials),
+    });
     if (!res.ok) {
       const contentType = res.headers.get("content-type");
       if (contentType?.includes("text/plain")) {
@@ -126,8 +112,7 @@ export default function SessionProvider({
         toast.error("Unknown error occurred.");
       }
     } else {
-      const data: { accessToken: string; refreshToken: string } =
-        await res.json();
+      const data: { accessToken: string; refreshToken: string } = await res.json();
       await setTokens(data.accessToken, data.refreshToken);
       await fetchSession();
       toast.success("Login successful!");
@@ -135,17 +120,14 @@ export default function SessionProvider({
     }
   }
   async function signup(credentials: SignUpBody) {
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_BACKEND}/api/auth/signup`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Device-Type": "mobile",
-        },
-        body: JSON.stringify({ ...credentials, turnstileToken: "" }),
+    const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Device-Type": "mobile",
       },
-    );
+      body: JSON.stringify({ ...credentials, turnstileToken: "" }),
+    });
     if (!res.ok) {
       const contentType = res.headers.get("Content-Type") ?? "";
       if (contentType.includes("text/plain")) {
@@ -167,9 +149,7 @@ export default function SessionProvider({
         const messages: string[] = problem.errors
           ? Object.values(problem.errors as Record<string, string[]>).flat()
           : [];
-        throw new Error(
-          messages[0] ?? problem.title ?? "Unknown error occurred.",
-        );
+        throw new Error(messages[0] ?? problem.title ?? "Unknown error occurred.");
       } else {
         throw new Error("Unknown error occurred.");
       }
@@ -178,7 +158,7 @@ export default function SessionProvider({
       const data = await res.json();
       await setTokens(data.accessToken, data.refreshToken);
       await fetchSession();
-      router.replace("/Dashboard");
+      router.replace("/(tabs)/Dashboard");
     }
   }
   async function logout() {
@@ -207,7 +187,6 @@ export default function SessionProvider({
 
 export function useSession() {
   const context = useContext(SessionContext);
-  if (!context)
-    throw new Error("useSession must be used within SessionProvider");
+  if (!context) throw new Error("useSession must be used within SessionProvider");
   return context;
 }

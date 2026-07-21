@@ -25,12 +25,7 @@ export default function RefundPolicy() {
       <View style={policyStyles.policyWrapper}>
         {refundPolicy.map((section, index) => {
           return (
-            <View
-              key={index}
-              style={
-                index < refundPolicy.length ? policyStyles.sectionBorder : {}
-              }
-            >
+            <View key={index} style={index < refundPolicy.length ? policyStyles.sectionBorder : {}}>
               <Text style={policyStyles.sectionTitles}>
                 {index + 1} {section.title}
               </Text>

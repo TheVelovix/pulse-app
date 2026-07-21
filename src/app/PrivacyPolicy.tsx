@@ -27,9 +27,7 @@ export default function PrivacyPolicy() {
           return (
             <View
               key={index}
-              style={
-                index < privacyPolicy.length ? policyStyles.sectionBorder : {}
-              }
+              style={index < privacyPolicy.length ? policyStyles.sectionBorder : {}}
             >
               <Text style={policyStyles.sectionTitles}>
                 {index + 1} {section.title}

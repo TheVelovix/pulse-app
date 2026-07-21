@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native";
 import { colors } from "./theme";
-import { isHeaderBarButtonsAvailableForCurrentPlatform } from "react-native-screens/lib/typescript/utils";
 
 export const authStyles = StyleSheet.create({
   form: {

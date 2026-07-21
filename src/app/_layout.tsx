@@ -28,7 +28,7 @@ export default function RootLayout() {
             },
           }}
         ></Stack>
-        <Toaster />
+        <Toaster theme="dark" />
       </SessionProvider>
     </GestureHandlerRootView>
   );

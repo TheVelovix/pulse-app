@@ -31,8 +31,7 @@ const tos = [
   },
   {
     title: "Termination",
-    content:
-      "We reserve the right to suspend or terminate accounts that violate these Terms.",
+    content: "We reserve the right to suspend or terminate accounts that violate these Terms.",
   },
   {
     title: "Disclaimer",
@@ -78,8 +77,7 @@ const privacyPolicy = [
   },
   {
     title: "Data Security",
-    content:
-      "Passwords are stored using bcrypt hashing. We use HTTPS for all data transmission.",
+    content: "Passwords are stored using bcrypt hashing. We use HTTPS for all data transmission.",
   },
   {
     title: "Your Rights",

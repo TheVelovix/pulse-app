@@ -9,10 +9,7 @@ export async function getTokens() {
   ]);
   return { accessToken, refreshToken };
 }
-export async function setTokens(
-  accessToken: string,
-  refreshToken: string,
-): Promise<void> {
+export async function setTokens(accessToken: string, refreshToken: string): Promise<void> {
   await Promise.all([
     SecureStore.setItemAsync("accessToken", accessToken),
     SecureStore.setItemAsync("refreshToken", refreshToken),
@@ -24,26 +21,22 @@ export async function fetchWithAuth(
   init: RequestInit = {},
 ): Promise<Response> {
   const { accessToken, refreshToken } = await getTokens();
-  if (!accessToken || !refreshToken)
-    toast.error("You're not signed in to make this request.");
+  if (!accessToken || !refreshToken) toast.error("You're not signed in to make this request.");
   const options = {
     ...init,
     headers: {
       ...init.headers,
       Authorization: `Bearer ${accessToken}`,
-      RefreshToken: refreshToken!,
+      refreshToken: refreshToken!,
       "X-Device-Type": "mobile",
     },
   };
   let res = await fetch(input, options);
   if (res.status === 401) {
-    const refreshRes = await fetch(
-      `${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`,
-      {
-        method: "POST",
-        headers: options.headers,
-      },
-    );
+    const refreshRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/refresh`, {
+      method: "POST",
+      headers: options.headers,
+    });
     if (!refreshRes.ok) {
       router.replace("/Login");
       return res;
@@ -51,4 +44,33 @@ export async function fetchWithAuth(
     res = await fetch(input, options);
   }
   return res;
+}
+
+export function parseMonth(month: number) {
+  switch (month) {
+    case 0:
+      return "Jan";
+    case 1:
+      return "Feb";
+    case 2:
+      return "March";
+    case 3:
+      return "Apr";
+    case 4:
+      return "May";
+    case 5:
+      return "June";
+    case 6:
+      return "July";
+    case 7:
+      return "Aug";
+    case 8:
+      return "Sep";
+    case 9:
+      return "Oct";
+    case 10:
+      return "Nov";
+    case 11:
+      return "Dec";
+  }
 }

@@ -25,10 +25,7 @@ export default function Tos() {
       <View style={policyStyles.policyWrapper}>
         {tos.map((section, index) => {
           return (
-            <View
-              key={index}
-              style={index < tos.length ? policyStyles.sectionBorder : {}}
-            >
+            <View key={index} style={index < tos.length ? policyStyles.sectionBorder : {}}>
               <Text style={policyStyles.sectionTitles}>
                 {index + 1} {section.title}
               </Text>

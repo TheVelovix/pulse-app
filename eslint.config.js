@@ -10,6 +10,7 @@ module.exports = defineConfig([
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/exhaustive-deps": "off",
       "react-hooks/immutability": "off",
+      "arrow-parens": "off",
     },
   },
 ]);

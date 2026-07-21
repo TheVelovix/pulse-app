@@ -17,7 +17,7 @@ export default function LogIn() {
     password: "",
   });
   function updateCredentials(key: string, value: string) {
-    setCredentials((prev) => ({
+    setCredentials(prev => ({
       ...prev,
       [key]: value,
     }));
@@ -58,7 +58,7 @@ export default function LogIn() {
               <TextInput
                 value={credentials.email}
                 style={authStyles.inputs}
-                onChangeText={(newVal) => updateCredentials("email", newVal)}
+                onChangeText={newVal => updateCredentials("email", newVal)}
                 placeholder="Email here..."
                 placeholderTextColor="#ffffff67"
                 keyboardType="email-address"
@@ -70,7 +70,7 @@ export default function LogIn() {
               <TextInput
                 value={credentials.password}
                 style={authStyles.inputs}
-                onChangeText={(newVal) => updateCredentials("password", newVal)}
+                onChangeText={newVal => updateCredentials("password", newVal)}
                 placeholder="Password here..."
                 placeholderTextColor="#ffffff67"
                 secureTextEntry

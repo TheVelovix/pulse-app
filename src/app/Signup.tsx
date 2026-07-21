@@ -18,10 +18,10 @@ const SignupBody = z.object({
   password: z
     .string()
     .min(8, { error: "Password must be at least 8 characters long" })
-    .refine((val) => /[A-Z]/.test(val), {
+    .refine(val => /[A-Z]/.test(val), {
       error: "Password must contain at least one uppercase letter",
     })
-    .refine((val) => /[^a-zA-Z0-9]/.test(val), {
+    .refine(val => /[^a-zA-Z0-9]/.test(val), {
       error: "Password must contain at least one special character",
     }),
 });
@@ -33,7 +33,7 @@ export default function SignUp() {
     promotionalCode: "",
   });
   function updateCredentials(key: string, value: string) {
-    setCredentials((prev) => ({
+    setCredentials(prev => ({
       ...prev,
       [key]: value,
     }));
@@ -45,11 +45,7 @@ export default function SignUp() {
   const [error, setError] = useState("");
   function handleSignUp() {
     startTransition(async () => {
-      if (
-        !credentials.email ||
-        !credentials.password ||
-        !credentials.confirmPassword
-      ) {
+      if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
         setError("Please fill out the form.");
         return;
       }
@@ -81,7 +77,7 @@ export default function SignUp() {
               <TextInput
                 value={credentials.email}
                 style={authStyles.inputs}
-                onChangeText={(newVal) => updateCredentials("email", newVal)}
+                onChangeText={newVal => updateCredentials("email", newVal)}
                 placeholderTextColor="#ffffff67"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -92,7 +88,7 @@ export default function SignUp() {
               <TextInput
                 value={credentials.password}
                 style={authStyles.inputs}
-                onChangeText={(newVal) => updateCredentials("password", newVal)}
+                onChangeText={newVal => updateCredentials("password", newVal)}
                 placeholderTextColor="#ffffff67"
                 secureTextEntry
                 autoCapitalize="none"
@@ -103,9 +99,7 @@ export default function SignUp() {
               <TextInput
                 value={credentials.confirmPassword}
                 style={authStyles.inputs}
-                onChangeText={(newVal) =>
-                  updateCredentials("confirmPassword", newVal)
-                }
+                onChangeText={newVal => updateCredentials("confirmPassword", newVal)}
                 placeholderTextColor="#ffffff67"
                 secureTextEntry
                 autoCapitalize="none"
@@ -116,9 +110,7 @@ export default function SignUp() {
               <TextInput
                 value={credentials.promotionalCode}
                 style={authStyles.inputs}
-                onChangeText={(newVal) =>
-                  updateCredentials("promotionalCode", newVal)
-                }
+                onChangeText={newVal => updateCredentials("promotionalCode", newVal)}
                 placeholderTextColor="#ffffff67"
                 secureTextEntry
                 autoCapitalize="none"
@@ -128,24 +120,15 @@ export default function SignUp() {
           <View style={styles.tosWrapper}>
             <Text style={styles.tosMain}>
               By continuing you agree to our{" "}
-              <Text
-                style={styles.underlined}
-                onPress={() => router.push("/Tos")}
-              >
+              <Text style={styles.underlined} onPress={() => router.push("/Tos")}>
                 Terms of Service
               </Text>
               ,{" "}
-              <Text
-                style={styles.underlined}
-                onPress={() => router.push("/PrivacyPolicy")}
-              >
+              <Text style={styles.underlined} onPress={() => router.push("/PrivacyPolicy")}>
                 Privacy Policy
               </Text>{" "}
               and{" "}
-              <Text
-                style={styles.underlined}
-                onPress={() => router.push("/RefundPolicy")}
-              >
+              <Text style={styles.underlined} onPress={() => router.push("/RefundPolicy")}>
                 Refund Policy
               </Text>
             </Text>
