@@ -1,4 +1,4 @@
-export interface NewEmailFormProps {
+export interface ProfileFormProps {
   isVisible: boolean;
   close: () => void;
 }

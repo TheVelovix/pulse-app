@@ -27,7 +27,7 @@ export async function fetchWithAuth(
     headers: {
       ...init.headers,
       Authorization: `Bearer ${accessToken}`,
-      refreshToken: refreshToken!,
+      RefreshToken: refreshToken!,
       "X-Device-Type": "mobile",
     },
   };
@@ -73,4 +73,8 @@ export function parseMonth(month: number) {
     case 11:
       return "Dec";
   }
+}
+export function capitalize(param: string) {
+  if (!param) return param;
+  return param[0].toUpperCase() + param.slice(1);
 }

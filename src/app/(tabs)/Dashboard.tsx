@@ -15,7 +15,10 @@ const dvw = Dimensions.get("window").width;
 async function fetchProjects() {
   try {
     const res = await fetchWithAuth(`${process.env.EXPO_PUBLIC_BACKEND}/api/projects`);
-    if (!res.ok) toast.error("Projects request failed");
+    if (!res.ok) {
+      toast.error("Projects request failed");
+      return;
+    }
     const data = await res.json();
     return data as Project[];
   } catch {

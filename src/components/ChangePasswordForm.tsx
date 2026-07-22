@@ -1,8 +1,7 @@
 import { colors } from "@/constants/theme";
-import { useSession } from "@/context/SessionContext";
 import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
-import { EnvelopeIcon } from "phosphor-react-native";
+import { LockIcon } from "phosphor-react-native";
 import { useEffect, useState, useTransition } from "react";
 import {
   Dimensions,
@@ -20,57 +19,48 @@ import * as z from "zod";
 
 const dvh = Dimensions.get("window").height;
 const dvw = Dimensions.get("window").width;
-const emailSchema = z.email("Invalid Email Address.");
-export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
+const passwordSchema = z
+  .string()
+  .min(8, { error: "Password must be at least 8 characters long" })
+  .refine(val => /[A-Z]/.test(val), {
+    error: "Password must contain at least one uppercase letter",
+  })
+  .refine(val => /[^a-zA-Z0-9]/.test(val), {
+    error: "Password must contain at least one special character",
+  });
+
+export default function ChangePasswordForm({ isVisible, close }: ProfileFormProps) {
   const dimensions = useWindowDimensions();
-  const [newEmail, setNewEmail] = useState("");
   const [reqPending, startTransition] = useTransition();
-  const [codeSent, setCodeSent] = useState(false);
-  function requestEmailChange() {
+  const [body, setBody] = useState({
+    code: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  function confirmPasswordChange() {
     startTransition(async () => {
       try {
-        emailSchema.parse(newEmail);
+        if (!body.code || !body.password || !body.confirmPassword) {
+          toast.error("Incomplete form.");
+          return;
+        }
+        if (body.password !== body.confirmPassword) {
+          toast.error("Passwords do not match.");
+          return;
+        }
+        passwordSchema.parse(body.password);
         const res = await fetchWithAuth(
-          `${process.env.EXPO_PUBLIC_BACKEND}/api/auth/requestEmailChange`,
+          `${process.env.EXPO_PUBLIC_BACKEND}/api/auth/reset-password`,
           {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              email: newEmail,
+              code: body.code,
+              newPassword: body.password,
             }),
-          },
-        );
-        if (!res.ok) {
-          if (res.headers.get("Content-Type")?.includes("text/plain")) {
-            const text = await res.text();
-            if (text === "email-in-use") {
-              toast.error("Email in use.");
-            }
-          }
-        } else {
-          toast.success("Code sent to new email.");
-          setCodeSent(true);
-        }
-      } catch (e) {
-        if (e instanceof z.ZodError) {
-          toast.error(e.issues[0].message);
-        } else {
-          toast.error("Something went wrong.");
-        }
-      }
-    });
-  }
-  const [verificationCode, setVerificationCode] = useState("");
-  const session = useSession();
-  function confirmEmailChange() {
-    startTransition(async () => {
-      try {
-        const res = await fetchWithAuth(
-          `${process.env.EXPO_PUBLIC_BACKEND}/api/auth/confirmEmailChange?code=${verificationCode}`,
-          {
-            method: "PATCH",
           },
         );
         if (!res.ok) {
@@ -78,13 +68,10 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
             const text = await res.text();
             if (text === "invalid-code") {
               toast.error("Invalid code.");
-            } else if (text === "code-expired") {
-              toast.error("This code has expired.");
             }
           }
         } else {
-          toast.success("Email changed successfully.");
-          await session.refetch();
+          toast.success("Password changed successfully.");
           setTimeout(close, 700);
         }
       } catch {
@@ -95,9 +82,11 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
   useEffect(() => {
     if (!isVisible) {
       // Cleanup
-      setCodeSent(false);
-      setNewEmail("");
-      setVerificationCode("");
+      setBody({
+        code: "",
+        password: "",
+        confirmPassword: "",
+      });
     }
   }, [isVisible]);
   return (
@@ -109,10 +98,10 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
         backgroundColor: "rgba(0,0,0,.7)",
       }}
     >
-      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.emailModal}>
-        <Animated.View entering={FlipInXUp} exiting={FlipOutXUp} style={styles.newEmailForm}>
+      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.passwordModal}>
+        <Animated.View entering={FlipInXUp} exiting={FlipOutXUp} style={styles.newPasswordForm}>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            {/*Envelope*/}
+            {/*Lock*/}
             <View
               style={{
                 backgroundColor: colors.accentTransparent,
@@ -123,49 +112,56 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
                 alignItems: "center",
               }}
             >
-              <EnvelopeIcon color={colors.accent} />
+              <LockIcon color={colors.accent} />
             </View>
             <View style={{ maxWidth: "80%" }}>
-              <Text style={styles.title}>Change Email</Text>
+              <Text style={styles.title}>Change Password</Text>
               <Text style={[styles.labels]}>
-                {!codeSent
-                  ? "Enter your new email address. \nWe'll send you a verification code."
-                  : `We just sent a code to ${newEmail}, enter it below to verify it.`}
+                We just sent a code to your email, enter it below.
               </Text>
             </View>
           </View>
 
           <View style={{ marginTop: 20 }}>
-            {!codeSent ? (
-              <>
-                <Text style={styles.subLabel}>New email address</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email address here..."
-                  value={newEmail}
-                  onChangeText={newVal => {
-                    setNewEmail(newVal);
-                  }}
-                  onSubmitEditing={requestEmailChange}
-                  autoCapitalize="none"
-                  editable={!reqPending}
-                />
-              </>
-            ) : (
-              <>
-                <Text style={styles.subLabel}>Verification code</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Verification code here..."
-                  value={verificationCode}
-                  onChangeText={newVal => {
-                    setVerificationCode(newVal);
-                  }}
-                  onSubmitEditing={confirmEmailChange}
-                  editable={!reqPending}
-                />
-              </>
-            )}
+            <Text style={styles.subLabel}>Verification Code</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="000000"
+              value={body.code}
+              onChangeText={newVal => {
+                setBody(prev => ({ ...prev, code: newVal }));
+              }}
+              autoCapitalize="none"
+              editable={!reqPending}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={{ marginTop: 20 }}>
+            <Text style={styles.subLabel}>New password</Text>
+            <TextInput
+              style={styles.input}
+              value={body.password}
+              onChangeText={newVal => {
+                setBody(prev => ({ ...prev, password: newVal }));
+              }}
+              autoCapitalize="none"
+              editable={!reqPending}
+              secureTextEntry={true}
+            />
+          </View>
+          <View style={{ marginTop: 20 }}>
+            <Text style={styles.subLabel}>Confirm new password</Text>
+            <TextInput
+              style={styles.input}
+              value={body.confirmPassword}
+              onChangeText={newVal => {
+                setBody(prev => ({ ...prev, confirmPassword: newVal }));
+              }}
+              onSubmitEditing={confirmPasswordChange}
+              autoCapitalize="none"
+              editable={!reqPending}
+              secureTextEntry={true}
+            />
           </View>
           <View style={[styles.buttonsWrapper, reqPending && { opacity: 0.5 }]}>
             <Pressable
@@ -177,7 +173,7 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
             </Pressable>
             <Pressable
               disabled={reqPending}
-              onPress={!codeSent ? requestEmailChange : confirmEmailChange}
+              onPress={confirmPasswordChange}
               style={({ pressed }) => [
                 styles.buttons,
                 {
@@ -197,7 +193,7 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
 }
 
 const styles = StyleSheet.create({
-  emailModal: {
+  passwordModal: {
     position: "absolute",
     zIndex: 5,
     height: dvh,
@@ -205,14 +201,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,.7)",
     alignItems: "center",
   },
-  newEmailForm: {
+  newPasswordForm: {
     width: "90%",
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,.2)",
     borderRadius: 10,
     padding: 15,
-    marginTop: "35%",
+    marginTop: "30%",
   },
   title: {
     fontFamily: "Poppins-SemiBold",

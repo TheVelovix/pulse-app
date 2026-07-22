@@ -6,5 +6,7 @@ export const colors = {
   accentTransparent: "#3b82f645",
   accentHover: "#2563eb",
   textMuted: "#6b7280",
+  textMutedTransparent: "#6b728045",
   destructive: "#ef4444",
+  destructiveTransparent: "#ef444445",
 };
