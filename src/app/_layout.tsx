@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import { useFonts } from "expo-font";
+import "../../bones/registry";
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();

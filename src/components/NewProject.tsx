@@ -1,4 +1,5 @@
 import { colors } from "@/constants/theme";
+import { sharedStyles } from "@/constants/commonStyles";
 import { fetchWithAuth } from "@/lib/lib";
 import { NewProjectBody, NewProjectProps } from "@/types/Dashboard";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
@@ -191,7 +192,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
               {error && (
                 <Text
                   style={[
-                    styles.labels,
+                    sharedStyles.labels,
                     {
                       color: colors.destructive,
                       textAlign: "center",
@@ -204,7 +205,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
               )}
               <View style={styles.inputsWrapper}>
                 <View>
-                  <Text style={styles.labels}>Name</Text>
+                  <Text style={sharedStyles.labels}>Name</Text>
                   <TextInput
                     style={styles.inputs}
                     value={body.name}
@@ -212,10 +213,11 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
                     placeholder="Name here..."
                     returnKeyType="next"
                     onSubmitEditing={focusDomain}
+                    placeholderTextColor="#ffffff45"
                   />
                 </View>
                 <View>
-                  <Text style={styles.labels}>Domain</Text>
+                  <Text style={sharedStyles.labels}>Domain</Text>
                   <TextInput
                     ref={domainRef}
                     style={styles.inputs}
@@ -223,6 +225,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
                     onChangeText={newVal => handleInputChange("domain", newVal)}
                     placeholder="example.com"
                     autoCapitalize="none"
+                    placeholderTextColor="#ffffff45"
                   />
                 </View>
               </View>
@@ -236,7 +239,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
                   ]}
                   onPress={() => handleClose()}
                 >
-                  <Text style={[styles.labels, { color: colors.textMuted }]}>Cancel</Text>
+                  <Text style={[sharedStyles.labels, { color: colors.textMuted }]}>Cancel</Text>
                 </Pressable>
                 <Pressable
                   disabled={reqPending}
@@ -249,7 +252,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
                     reqPending && { opacity: 0.7 },
                   ]}
                 >
-                  <Text style={[styles.labels]}>Create</Text>
+                  <Text style={[sharedStyles.labels]}>Create</Text>
                 </Pressable>
               </View>
             </Animated.View>
@@ -267,10 +270,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginTop: 25,
     textAlign: "center",
-  },
-  labels: {
-    color: "white",
-    fontFamily: "Poppins-Regular",
   },
   inputsWrapper: {
     width: "85%",

@@ -58,10 +58,8 @@ export default function SessionProvider({ children }: { children: React.ReactNod
             "X-Device-Type": "mobile",
           },
         });
-        console.log("REFRESH RES: ", refreshRes);
         if (refreshRes.ok) {
           const data = await refreshRes.json();
-          console.log("REFRESH BODY: ", data);
           await setTokens(data.accessToken, data.refreshToken);
           res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/me`, {
             headers: {

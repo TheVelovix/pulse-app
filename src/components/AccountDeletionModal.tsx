@@ -1,4 +1,5 @@
 import { colors } from "@/constants/theme";
+import { sharedStyles } from "@/constants/commonStyles";
 import { useSession } from "@/context/SessionContext";
 import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
@@ -84,7 +85,7 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
             </View>
             <View style={{ maxWidth: "80%" }}>
               <Text style={styles.title}>Delete Account</Text>
-              <Text style={[styles.labels]}>
+              <Text style={[sharedStyles.labels]}>
                 There is no going back. This will permanently delete your account, all projects, and
                 all analytics data.
               </Text>
@@ -92,7 +93,7 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
           </View>
 
           <View style={{ marginTop: 20 }}>
-            <Text style={styles.subLabel}>
+            <Text style={sharedStyles.labelsMuted}>
               Type{" "}
               <Text style={{ color: "white", fontFamily: "Poppins-Medium" }}>
                 {session.user?.email}
@@ -109,6 +110,7 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
               autoCapitalize="none"
               editable={!reqPending}
               keyboardType="numeric"
+              placeholderTextColor="#ffffff45"
             />
           </View>
           <View style={[styles.buttonsWrapper, reqPending && { opacity: 0.5 }]}>
@@ -117,7 +119,7 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
               style={({ pressed }) => [styles.buttons, (reqPending || pressed) && { opacity: 0.7 }]}
               onPress={close}
             >
-              <Text style={[styles.labels, { color: colors.textMuted }]}>Cancel</Text>
+              <Text style={[sharedStyles.labels, { color: colors.textMuted }]}>Cancel</Text>
             </Pressable>
             <Pressable
               disabled={reqPending}
@@ -136,11 +138,11 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
               ]}
             >
               <TrashIcon color={"white"} />
-              <Text style={[styles.labels]}>Delete my account</Text>
+              <Text style={[sharedStyles.labels]}>Delete my account</Text>
             </Pressable>
           </View>
         </Animated.View>
-        <Toaster />
+        <Toaster theme="dark" />
       </Animated.View>
     </Modal>
   );
@@ -168,14 +170,6 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-SemiBold",
     color: "white",
     fontSize: 16,
-  },
-  labels: {
-    fontFamily: "Poppins-Regular",
-    color: "white",
-  },
-  subLabel: {
-    fontFamily: "Poppins-Regular",
-    color: colors.textMuted,
   },
   input: {
     borderWidth: 1,

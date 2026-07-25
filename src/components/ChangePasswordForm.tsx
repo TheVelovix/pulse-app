@@ -1,4 +1,5 @@
 import { colors } from "@/constants/theme";
+import { sharedStyles } from "@/constants/commonStyles";
 import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
 import { LockIcon } from "phosphor-react-native";
@@ -116,14 +117,14 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
             </View>
             <View style={{ maxWidth: "80%" }}>
               <Text style={styles.title}>Change Password</Text>
-              <Text style={[styles.labels]}>
+              <Text style={[sharedStyles.labels]}>
                 We just sent a code to your email, enter it below.
               </Text>
             </View>
           </View>
 
           <View style={{ marginTop: 20 }}>
-            <Text style={styles.subLabel}>Verification Code</Text>
+            <Text style={sharedStyles.labelsMuted}>Verification Code</Text>
             <TextInput
               style={styles.input}
               placeholder="000000"
@@ -134,10 +135,11 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
               autoCapitalize="none"
               editable={!reqPending}
               keyboardType="numeric"
+              placeholderTextColor="#ffffff45"
             />
           </View>
           <View style={{ marginTop: 20 }}>
-            <Text style={styles.subLabel}>New password</Text>
+            <Text style={sharedStyles.labelsMuted}>New password</Text>
             <TextInput
               style={styles.input}
               value={body.password}
@@ -147,10 +149,11 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
               autoCapitalize="none"
               editable={!reqPending}
               secureTextEntry={true}
+              placeholderTextColor="#ffffff45"
             />
           </View>
           <View style={{ marginTop: 20 }}>
-            <Text style={styles.subLabel}>Confirm new password</Text>
+            <Text style={sharedStyles.labelsMuted}>Confirm new password</Text>
             <TextInput
               style={styles.input}
               value={body.confirmPassword}
@@ -161,6 +164,7 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
               autoCapitalize="none"
               editable={!reqPending}
               secureTextEntry={true}
+              placeholderTextColor="#ffffff45"
             />
           </View>
           <View style={[styles.buttonsWrapper, reqPending && { opacity: 0.5 }]}>
@@ -169,7 +173,7 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
               style={({ pressed }) => [styles.buttons, (reqPending || pressed) && { opacity: 0.7 }]}
               onPress={close}
             >
-              <Text style={[styles.labels, { color: colors.textMuted }]}>Cancel</Text>
+              <Text style={[sharedStyles.labels, { color: colors.textMuted }]}>Cancel</Text>
             </Pressable>
             <Pressable
               disabled={reqPending}
@@ -182,11 +186,11 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
                 reqPending && { opacity: 0.7 },
               ]}
             >
-              <Text style={[styles.labels]}>Submit</Text>
+              <Text style={[sharedStyles.labels]}>Submit</Text>
             </Pressable>
           </View>
         </Animated.View>
-        <Toaster />
+        <Toaster theme="dark" />
       </Animated.View>
     </Modal>
   );
@@ -214,14 +218,6 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-SemiBold",
     color: "white",
     fontSize: 16,
-  },
-  labels: {
-    fontFamily: "Poppins-Regular",
-    color: "white",
-  },
-  subLabel: {
-    fontFamily: "Poppins-Regular",
-    color: colors.textMuted,
   },
   input: {
     borderWidth: 1,

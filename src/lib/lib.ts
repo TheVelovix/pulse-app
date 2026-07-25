@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { toast } from "sonner-native";
 
 export async function getTokens() {
@@ -9,7 +9,7 @@ export async function getTokens() {
   ]);
   return { accessToken, refreshToken };
 }
-export async function setTokens(accessToken: string, refreshToken: string): Promise<void> {
+export async function setTokens(accessToken: string, refreshToken: string) {
   await Promise.all([
     SecureStore.setItemAsync("accessToken", accessToken),
     SecureStore.setItemAsync("refreshToken", refreshToken),
@@ -77,4 +77,8 @@ export function parseMonth(month: number) {
 export function capitalize(param: string) {
   if (!param) return param;
   return param[0].toUpperCase() + param.slice(1);
+}
+
+export function useTypedParams<T>() {
+  return useLocalSearchParams() as T;
 }

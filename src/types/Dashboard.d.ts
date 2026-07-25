@@ -22,3 +22,8 @@ export interface ProjectSettingsProps {
   updateProjectVisibility: (projectId: string, isPublic: boolean) => void;
   afterDelete: () => void;
 }
+export interface CopyScriptParams {
+  isVisible: boolean;
+  close: () => void;
+  projectId: string;
+}

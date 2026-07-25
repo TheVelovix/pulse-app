@@ -66,6 +66,36 @@ export const authStyles = StyleSheet.create({
   },
 });
 
+export const sharedStyles = StyleSheet.create({
+  title: {
+    color: "white",
+    fontSize: 22,
+    fontFamily: "Poppins-Bold",
+  },
+  labels: {
+    color: "white",
+    fontFamily: "Poppins-Regular",
+  },
+  labelsMuted: {
+    color: colors.textMuted,
+    fontFamily: "Poppins-Regular",
+  },
+  subTitles: {
+    color: "white",
+    fontSize: 20,
+    fontFamily: "Poppins-SemiBold",
+  },
+  cards: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+});
+
 export const policyStyles = StyleSheet.create({
   title: {
     color: "white",

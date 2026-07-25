@@ -1,4 +1,5 @@
 import { colors } from "@/constants/theme";
+import { sharedStyles } from "@/constants/commonStyles";
 import { useSession } from "@/context/SessionContext";
 import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
@@ -127,7 +128,7 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
             </View>
             <View style={{ maxWidth: "80%" }}>
               <Text style={styles.title}>Change Email</Text>
-              <Text style={[styles.labels]}>
+              <Text style={[sharedStyles.labels]}>
                 {!codeSent
                   ? "Enter your new email address. \nWe'll send you a verification code."
                   : `We just sent a code to ${newEmail}, enter it below to verify it.`}
@@ -138,7 +139,7 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
           <View style={{ marginTop: 20 }}>
             {!codeSent ? (
               <>
-                <Text style={styles.subLabel}>New email address</Text>
+                <Text style={sharedStyles.labelsMuted}>New email address</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Email address here..."
@@ -149,11 +150,12 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
                   onSubmitEditing={requestEmailChange}
                   autoCapitalize="none"
                   editable={!reqPending}
+                  placeholderTextColor="#ffffff45"
                 />
               </>
             ) : (
               <>
-                <Text style={styles.subLabel}>Verification code</Text>
+                <Text style={sharedStyles.labelsMuted}>Verification code</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Verification code here..."
@@ -163,6 +165,7 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
                   }}
                   onSubmitEditing={confirmEmailChange}
                   editable={!reqPending}
+                  placeholderTextColor="#ffffff45"
                 />
               </>
             )}
@@ -173,7 +176,7 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
               style={({ pressed }) => [styles.buttons, (reqPending || pressed) && { opacity: 0.7 }]}
               onPress={close}
             >
-              <Text style={[styles.labels, { color: colors.textMuted }]}>Cancel</Text>
+              <Text style={[sharedStyles.labels, { color: colors.textMuted }]}>Cancel</Text>
             </Pressable>
             <Pressable
               disabled={reqPending}
@@ -186,11 +189,11 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
                 reqPending && { opacity: 0.7 },
               ]}
             >
-              <Text style={[styles.labels]}>Submit</Text>
+              <Text style={[sharedStyles.labels]}>Submit</Text>
             </Pressable>
           </View>
         </Animated.View>
-        <Toaster />
+        <Toaster theme="dark" />
       </Animated.View>
     </Modal>
   );
@@ -218,14 +221,6 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-SemiBold",
     color: "white",
     fontSize: 16,
-  },
-  labels: {
-    fontFamily: "Poppins-Regular",
-    color: "white",
-  },
-  subLabel: {
-    fontFamily: "Poppins-Regular",
-    color: colors.textMuted,
   },
   input: {
     borderWidth: 1,

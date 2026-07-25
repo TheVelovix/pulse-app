@@ -1,15 +1,26 @@
 import NewProject from "@/components/NewProject";
 import ProjectSettings from "@/components/ProjectSettings";
 import { colors } from "@/constants/theme";
+import { sharedStyles } from "@/constants/commonStyles";
 import { SubscriptionPlan, useSession } from "@/context/SessionContext";
 import { fetchWithAuth, parseMonth } from "@/lib/lib";
 import { Project } from "@/types/Dashboard";
+import { ProjectDetailsParams } from "@/types/NavParams";
 import { useRouter } from "expo-router";
 import { GearIcon, PlusIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, Pressable, StyleSheet, FlatList, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  RefreshControl,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
+import { Skeleton } from "boneyard-js/react-native";
 
 const dvw = Dimensions.get("window").width;
 async function fetchProjects() {
@@ -30,17 +41,20 @@ export default function Dashboard() {
   const [showProjectButton, setShowProjectButton] = useState(false);
   const session = useSession();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!session.user) router.replace("/Login");
-    fetchProjects().then(projects => setProjects(projects ?? []));
+    fetchProjects().then(projects => {
+      setProjects(projects ?? []);
+      setLoading(false);
+    });
     if (
-      session.user?.subscriptionPlan &&
-      session.user?.subscriptionPlan === SubscriptionPlan.FREE &&
-      projects.length < 5
+      (session.user?.subscriptionPlan === SubscriptionPlan.FREE && projects.length < 5) ||
+      session.user?.subscriptionPlan === SubscriptionPlan.PRO
     )
       setShowProjectButton(true);
     else setShowProjectButton(false);
-  }, [session, projects]);
+  }, [session]);
 
   const insets = useSafeAreaInsets();
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
@@ -50,6 +64,12 @@ export default function Dashboard() {
   const hideOptions = useCallback(() => {
     setShowOptions(false);
     setSelectedProject(null);
+  }, []);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchProjects();
+    setRefreshing(false);
   }, []);
   return (
     <View
@@ -77,42 +97,57 @@ export default function Dashboard() {
           </Pressable>
         )}
       </View>
-      <FlatList
-        data={projects}
-        keyExtractor={item => item.id}
-        numColumns={dvw < 640 ? 1 : 2}
-        renderItem={({ item, index }) => {
-          const createdAt = new Date(item.createdAt);
-          return (
-            <Pressable
-              style={({ pressed }) => [
-                styles.projects,
-                pressed && { backgroundColor: "rgba(255,255,255,.2)" },
-              ]}
-              onLongPress={() => {
-                setShowOptions(true);
-                setSelectedProject(index);
-              }}
-            >
-              <Text style={[styles.labels, { fontSize: 18, marginBottom: 10 }]}>{item.name}</Text>
-              <Text style={styles.labelsMuted}>
-                Created{" "}
-                {`${parseMonth(createdAt.getMonth())} ${createdAt.getDate()}, ${createdAt.getFullYear()}`}
-              </Text>
+      <Skeleton name="projects-list" loading={loading}>
+        <FlatList
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          data={projects}
+          keyExtractor={item => item.id}
+          numColumns={dvw < 640 ? 1 : 2}
+          renderItem={({ item, index }) => {
+            const createdAt = new Date(item.createdAt);
+            return (
               <Pressable
-                onPress={e => {
-                  e.stopPropagation();
+                style={({ pressed }) => [
+                  styles.projects,
+                  pressed && { backgroundColor: "rgba(255,255,255,.2)" },
+                ]}
+                onPress={() => {
+                  router.push({
+                    pathname: "/ProjectDetails",
+                    params: {
+                      ...item,
+                      isPublic: item.isPublic.toString(),
+                      publicSlug: item.publicSlug || "",
+                    } satisfies ProjectDetailsParams,
+                  });
+                }}
+                onLongPress={() => {
                   setShowOptions(true);
                   setSelectedProject(index);
                 }}
-                style={({ pressed }) => [styles.settingsButton, pressed && { opacity: 0.5 }]}
               >
-                <GearIcon color={colors.textMuted} />
+                <Text style={[sharedStyles.labels, { fontSize: 18, marginBottom: 10 }]}>
+                  {item.name}
+                </Text>
+                <Text style={sharedStyles.labelsMuted}>
+                  Created{" "}
+                  {`${parseMonth(createdAt.getMonth())} ${createdAt.getDate()}, ${createdAt.getFullYear()}`}
+                </Text>
+                <Pressable
+                  onPress={e => {
+                    e.stopPropagation();
+                    setShowOptions(true);
+                    setSelectedProject(index);
+                  }}
+                  style={({ pressed }) => [styles.settingsButton, pressed && { opacity: 0.5 }]}
+                >
+                  <GearIcon color={colors.textMuted} />
+                </Pressable>
               </Pressable>
-            </Pressable>
-          );
-        }}
-      />
+            );
+          }}
+        />
+      </Skeleton>
       <NewProject
         isVisible={showNewProjectForm}
         onClose={hideForm}
@@ -151,14 +186,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-  },
-  labels: {
-    color: "white",
-    fontFamily: "Poppins-Regular",
-  },
-  labelsMuted: {
-    color: colors.textMuted,
-    fontFamily: "Poppins-Regular",
   },
   projects: {
     borderWidth: 1,
