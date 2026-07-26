@@ -17,7 +17,7 @@ export interface AnalyticsResult {
   customEvents: CustomEvent[];
 }
 type DailyView = {
-  date: Date;
+  date: string;
   count: number;
 };
 type Page = {

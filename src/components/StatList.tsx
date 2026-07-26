@@ -17,15 +17,12 @@ export default function StatList({
       {items.length === 0 ? (
         <Text style={[sharedStyles.labelsMuted, styles.emptyLabel]}>No data</Text>
       ) : (
-        <ScrollView style={styles.list}>
+        <ScrollView style={styles.list} nestedScrollEnabled>
           {items.map((item, i) => (
             <View key={i} style={styles.row}>
               <View style={styles.barWrapper}>
                 <View
-                  style={[
-                    styles.bar,
-                    { width: `${total > 0 ? (item.count / total) * 100 : 0}%` },
-                  ]}
+                  style={[styles.bar, { width: `${total > 0 ? (item.count / total) * 100 : 0}%` }]}
                 />
                 <Text style={[sharedStyles.labels, styles.label]} numberOfLines={1}>
                   {title === "Countries" ? `${flag(item.label)} ${name(item.label)}` : item.label}

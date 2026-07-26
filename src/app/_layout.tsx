@@ -5,7 +5,13 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import { useFonts } from "expo-font";
+import { configureBoneyard } from "boneyard-js/native";
 import "../../bones/registry";
+
+configureBoneyard({
+  color: colors.card,
+  darkColor: colors.card,
+});
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();

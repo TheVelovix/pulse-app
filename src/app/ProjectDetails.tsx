@@ -18,6 +18,7 @@ import EventSource from "react-native-sse";
 import StatList from "@/components/StatList";
 import StatTable from "@/components/StatTable";
 import SearchConsoleList from "@/components/SearchConsoleList";
+import ViewsChart from "@/components/ViewsChart";
 
 async function getProjectAnalytics(
   id: string,
@@ -197,7 +198,11 @@ export default function ProjectDetails() {
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 15 }}>
       <BackButton />
-      <Skeleton name="project-details" loading={loading}>
+      <Skeleton
+        name="project-details"
+        loading={loading}
+        style={loading ? styles.skeletonFrame : undefined}
+      >
         <Text style={sharedStyles.title}>{params.name} Analyitcs</Text>
         {params.isPublic === "true" && (
           <>
@@ -217,8 +222,12 @@ export default function ProjectDetails() {
         )}
       </Skeleton>
       {/*Date Filters*/}
-      <Skeleton name="filter-buttons" loading={loading}>
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+      <Skeleton
+        name="filter-buttons"
+        loading={loading}
+        style={loading ? styles.skeletonFrame : undefined}
+      >
+        <View style={{ flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap" }}>
           {DATE_RANGES.map((range, index) => {
             if (
               range.label === "All time" &&
@@ -268,7 +277,11 @@ export default function ProjectDetails() {
       </Skeleton>
 
       {/*Buttons*/}
-      <Skeleton name="project-buttons" loading={loading}>
+      <Skeleton
+        name="project-buttons"
+        loading={loading}
+        style={loading ? styles.skeletonFrame : undefined}
+      >
         <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-around" }}>
           <Pressable
             onPress={() => setShowCopyScript(true)}
@@ -287,7 +300,11 @@ export default function ProjectDetails() {
         </View>
       </Skeleton>
 
-      <Skeleton name="main-stats" loading={loading}>
+      <Skeleton
+        name="main-stats"
+        loading={loading}
+        style={loading ? styles.skeletonFrame : undefined}
+      >
         <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-around" }}>
           <View style={sharedStyles.cards}>
             <Text style={sharedStyles.labelsMuted}>Total Views</Text>
@@ -310,7 +327,13 @@ export default function ProjectDetails() {
         </View>
       </Skeleton>
 
-      <Skeleton name="analytics-cards" loading={loading}>
+      <ViewsChart data={analytics.viewsPerDay} />
+
+      <Skeleton
+        name="analytics-cards"
+        loading={loading}
+        style={loading ? styles.skeletonFrame : undefined}
+      >
         <StatList
           title="Entry Pages"
           items={analytics.entryPages.map(p => ({
@@ -468,5 +491,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+  },
+  skeletonFrame: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 10,
   },
 });

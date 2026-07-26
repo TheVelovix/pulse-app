@@ -1,0 +1,19 @@
+{
+  "breakpoints": {
+    "411": {
+      "name": "project-details",
+      "viewportWidth": 411,
+      "width": 382,
+      "height": 38,
+      "bones": [
+        [
+          0,
+          0,
+          100,
+          38,
+          8
+        ]
+      ]
+    }
+  }
+}
