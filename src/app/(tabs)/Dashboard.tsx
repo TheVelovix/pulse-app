@@ -58,7 +58,13 @@ export default function Dashboard() {
 
   const insets = useSafeAreaInsets();
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
-  const hideForm = useCallback(() => setShowNewProjectForm(false), []);
+  const hideForm = useCallback(async (refetchProjects: boolean) => {
+    setShowNewProjectForm(false);
+    if (refetchProjects) {
+      const newProjects = await fetchProjects();
+      setProjects(prev => newProjects ?? prev);
+    }
+  }, []);
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   const hideOptions = useCallback(() => {
@@ -148,11 +154,7 @@ export default function Dashboard() {
           }}
         />
       </Skeleton>
-      <NewProject
-        isVisible={showNewProjectForm}
-        onClose={hideForm}
-        refetchProjects={fetchProjects}
-      />
+      <NewProject isVisible={showNewProjectForm} onClose={hideForm} />
       <ProjectSettings
         isVisible={showOptions}
         onClose={hideOptions}

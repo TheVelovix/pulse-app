@@ -11,48 +11,48 @@ export interface AnalyticsResult {
   operatingSystems: OperatingSystem[];
   uniqueVisitors: number;
   bounceRate: number;
-  entryPagtes: Page[];
+  entryPages: Page[];
   timeOnPage: TimeOnPage[];
   utmStats: Utm;
   customEvents: CustomEvent[];
 }
-interface DailyView {
+type DailyView = {
   date: Date;
   count: number;
-}
-interface Page {
+};
+type Page = {
   url: string;
   count: number;
-}
-interface Referrer {
+};
+type Referrer = {
   referrer: string;
   count: number;
-}
-interface Device {
+};
+type Device = {
   deviceFamily: string;
   deviceBrand: string;
   deviceModel: string;
   isSpider: boolean;
   count: number;
-}
-interface Browser {
+};
+type Browser = {
   browser: string;
   browserMajor: string;
   count: number;
-}
-interface Country {
+};
+type Country = {
   country: string;
   count: number;
-}
-interface OperatingSystem {
+};
+type OperatingSystem = {
   os: string;
   osMajor: string;
   count: number;
-}
-interface TimeOnPage {
+};
+type TimeOnPage = {
   url: string;
   avgSeconds: number;
-}
+};
 interface Utm {
   topSources: TopSource[];
   topMediums: TopMedium[];
@@ -60,30 +60,31 @@ interface Utm {
   topContents: TopContent[];
   topTerms: TopTerm[];
 }
-interface TopSource {
+type TopSource = {
   source: string;
   count: number;
-}
-interface TopMedium {
+};
+type TopMedium = {
   medium: string;
   count: number;
-}
-interface TopCampaign {
+};
+type TopCampaign = {
   campaign: string;
-}
-interface TopContent {
+  count: number;
+};
+type TopContent = {
   content: string;
   count: number;
-}
-interface TopTerm {
+};
+type TopTerm = {
   term: string;
   count: number;
-}
-interface CustomEvent {
+};
+type CustomEvent = {
   name: string;
   count: number;
   totalRevenue: number;
-}
+};
 export interface DateRangePickerParams {
   isVisible: boolean;
   maximumDate: Date;
@@ -91,3 +92,10 @@ export interface DateRangePickerParams {
   submitDate: (startDate: Date, endDate: Date) => void;
   close: () => void;
 }
+export type GoogleSearchConsoleData = {
+  query: string;
+  clicks: number;
+  impressions: number;
+  ctr: float;
+  position: float;
+};

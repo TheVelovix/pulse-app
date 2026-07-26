@@ -33,7 +33,7 @@ const domainSchema = z
   .max(253, "Domain is too long")
   .regex(domainRegex, "Enter a valid domain (e.g. example.com)");
 
-export default function NewProject({ isVisible, onClose, refetchProjects }: NewProjectProps) {
+export default function NewProject({ isVisible, onClose }: NewProjectProps) {
   const [body, setBody] = useState<NewProjectBody>({
     name: "",
     domain: "",
@@ -77,7 +77,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
   }, [isVisible]);
 
   const handleClose = useCallback(
-    (fast?: boolean) => {
+    (refetch:boolean, fast?: boolean) => {
       translateY.value = withTiming(dimensions.height, {
         duration: fast ? 100 : 200,
         easing: Easing.inOut(Easing.ease),
@@ -86,7 +86,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
         name: "",
         domain: "",
       });
-      setTimeout(() => onClose(), 200);
+      setTimeout(() => onClose(refetch), 200);
     },
     [isVisible],
   );
@@ -103,7 +103,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
     })
     .onEnd(e => {
       const shouldClose = e.translationY > dimensions.height * 0.15 || e.velocityY > 800;
-      if (shouldClose) runOnJS(handleClose)(true);
+      if (shouldClose) runOnJS(handleClose)(false, true);
       else {
         translateY.value = withTiming(dimensions.height * 0.1, {
           duration: 200,
@@ -159,8 +159,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
           name: "",
           domain: "",
         });
-        await refetchProjects();
-        handleClose();
+        handleClose(true);
       } catch (e) {
         if (e instanceof z.ZodError) {
           setError(e.issues[0].message);
@@ -179,7 +178,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
           backgroundColor: "rgba(0,0,0,.6)",
         },
       ]}
-      onRequestClose={() => handleClose()}
+      onRequestClose={() => handleClose(false)}
       visible={isVisible}
       animationType="fade"
     >
@@ -237,7 +236,7 @@ export default function NewProject({ isVisible, onClose, refetchProjects }: NewP
                     styles.buttons,
                     (reqPending || pressed) && { opacity: 0.7 },
                   ]}
-                  onPress={() => handleClose()}
+                  onPress={() => handleClose(false)}
                 >
                   <Text style={[sharedStyles.labels, { color: colors.textMuted }]}>Cancel</Text>
                 </Pressable>

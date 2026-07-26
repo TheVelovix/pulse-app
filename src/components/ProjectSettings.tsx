@@ -17,6 +17,7 @@ import Dragger from "./Dragger";
 import { GlobeIcon, LockIcon, TrashIcon } from "phosphor-react-native";
 import { fetchWithAuth } from "@/lib/lib";
 import { toast, Toaster } from "sonner-native";
+import { SubscriptionPlan, useSession } from "@/context/SessionContext";
 
 export default function ProjectSettings({
   isVisible,
@@ -152,6 +153,7 @@ export default function ProjectSettings({
       }
     });
   }
+  const session = useSession();
   return (
     <Modal
       style={[
@@ -212,24 +214,26 @@ export default function ProjectSettings({
           <GestureDetector gesture={panGesture}>
             <Animated.View style={optionsStyle}>
               <Dragger />
-              <Pressable
-                style={({ pressed }) => [
-                  styles.buttons,
-                  { marginTop: 25, borderBottomWidth: 0 },
-                  pressed && { backgroundColor: "rgba(255,255,255, .2)" },
-                ]}
-                disabled={reqPending}
-                onPress={toggleVisibility}
-              >
-                {project && project.isPublic ? (
-                  <LockIcon color={colors.textMuted} />
-                ) : (
-                  <GlobeIcon color={colors.textMuted} />
-                )}
-                <Text style={styles.labels}>
-                  {project && project.isPublic ? "Make Private" : "Make Public"}
-                </Text>
-              </Pressable>
+              {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.buttons,
+                    { marginTop: 25, borderBottomWidth: 0 },
+                    pressed && { backgroundColor: "rgba(255,255,255, .2)" },
+                  ]}
+                  disabled={reqPending}
+                  onPress={toggleVisibility}
+                >
+                  {project && project.isPublic ? (
+                    <LockIcon color={colors.textMuted} />
+                  ) : (
+                    <GlobeIcon color={colors.textMuted} />
+                  )}
+                  <Text style={styles.labels}>
+                    {project && project.isPublic ? "Make Private" : "Make Public"}
+                  </Text>
+                </Pressable>
+              )}
 
               <Pressable
                 style={({ pressed }) => [

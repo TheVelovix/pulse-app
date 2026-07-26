@@ -41,7 +41,18 @@ export async function fetchWithAuth(
       router.replace("/Login");
       return res;
     }
-    res = await fetch(input, options);
+    const data = await refreshRes.json();
+    await setTokens(data.accessToken, data.refreshToken);
+    const { accessToken, refreshToken } = await getTokens();
+    res = await fetch(input, {
+      ...init,
+      headers: {
+        ...init.headers,
+        Authorization: `Bearer ${accessToken}`,
+        RefreshToken: refreshToken!,
+        "X-Device-Type": "mobile",
+      },
+    });
   }
   return res;
 }
@@ -81,4 +92,13 @@ export function capitalize(param: string) {
 
 export function useTypedParams<T>() {
   return useLocalSearchParams() as T;
+}
+
+export function getFlagEmoji(countryCode: string): string {
+  const code = countryCode.toUpperCase();
+  if (code.length !== 2) return "";
+
+  const codePoints = [...code].map(char => 127397 + char.charCodeAt(0));
+
+  return String.fromCodePoint(...codePoints);
 }
