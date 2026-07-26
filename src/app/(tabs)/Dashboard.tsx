@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
-import { Skeleton } from "boneyard-js/native";
+import { Skeleton } from "@/components/Skeleton";
 
 const dvw = Dimensions.get("window").width;
 async function fetchProjects() {
@@ -103,11 +103,7 @@ export default function Dashboard() {
           </Pressable>
         )}
       </View>
-      <Skeleton
-        name="projects-list"
-        loading={loading}
-        style={loading ? styles.skeletonFrame : undefined}
-      >
+      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
         <FlatList
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           data={projects}
@@ -185,6 +181,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginVertical: 10,
+    minHeight: 150,
   },
   header: {
     flexDirection: "row",

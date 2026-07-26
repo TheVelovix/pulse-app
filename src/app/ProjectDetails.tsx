@@ -4,7 +4,7 @@ import { ProjectDetailsParams } from "@/types/NavParams";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { toast } from "sonner-native";
-import { Skeleton } from "boneyard-js/native";
+import { Skeleton } from "@/components/Skeleton";
 import { sharedStyles } from "@/constants/commonStyles";
 import { CalendarIcon, CopyIcon, ExportIcon } from "phosphor-react-native";
 import { colors } from "@/constants/theme";
@@ -27,7 +27,17 @@ async function getProjectAnalytics(
   to?: Date,
 ): Promise<AnalyticsResult | null> {
   try {
-    const res = await fetchWithAuth(`${process.env.EXPO_PUBLIC_BACKEND}/api/analytics/${id}`);
+    const urlParams = new URLSearchParams();
+    if (from && to) {
+      urlParams.set("from", from.toDateString());
+      urlParams.set("to", to.toDateString());
+    } else if (days) {
+      urlParams.set("days", days.toString());
+    }
+    const query = urlParams.toString();
+    const res = await fetchWithAuth(
+      `${process.env.EXPO_PUBLIC_BACKEND}/api/analytics/${id}?${query}`,
+    );
     if (!res.ok) {
       if (res.status === 404) toast.error("Project not found.");
       else toast.error("Project details request failed.");
@@ -198,11 +208,7 @@ export default function ProjectDetails() {
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 15 }}>
       <BackButton />
-      <Skeleton
-        name="project-details"
-        loading={loading}
-        style={loading ? styles.skeletonFrame : undefined}
-      >
+      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
         <Text style={sharedStyles.title}>{params.name} Analyitcs</Text>
         {params.isPublic === "true" && (
           <>
@@ -222,11 +228,7 @@ export default function ProjectDetails() {
         )}
       </Skeleton>
       {/*Date Filters*/}
-      <Skeleton
-        name="filter-buttons"
-        loading={loading}
-        style={loading ? styles.skeletonFrame : undefined}
-      >
+      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
         <View style={{ flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap" }}>
           {DATE_RANGES.map((range, index) => {
             if (
@@ -277,11 +279,7 @@ export default function ProjectDetails() {
       </Skeleton>
 
       {/*Buttons*/}
-      <Skeleton
-        name="project-buttons"
-        loading={loading}
-        style={loading ? styles.skeletonFrame : undefined}
-      >
+      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-around" }}>
           <Pressable
             onPress={() => setShowCopyScript(true)}
@@ -300,11 +298,7 @@ export default function ProjectDetails() {
         </View>
       </Skeleton>
 
-      <Skeleton
-        name="main-stats"
-        loading={loading}
-        style={loading ? styles.skeletonFrame : undefined}
-      >
+      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-around" }}>
           <View style={sharedStyles.cards}>
             <Text style={sharedStyles.labelsMuted}>Total Views</Text>
@@ -316,7 +310,9 @@ export default function ProjectDetails() {
           </View>
           <View style={sharedStyles.cards}>
             <Text style={sharedStyles.labelsMuted}>Bounce Rate</Text>
-            <Text style={sharedStyles.title}>{(analytics?.bounceRate ?? 0 * 100).toFixed(1)}%</Text>
+            <Text style={sharedStyles.title}>
+              {((analytics?.bounceRate ?? 0) * 100).toFixed(1)}%
+            </Text>
           </View>
           {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
             <View style={sharedStyles.cards}>
@@ -327,13 +323,11 @@ export default function ProjectDetails() {
         </View>
       </Skeleton>
 
-      <ViewsChart data={analytics.viewsPerDay} />
+      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
+        <ViewsChart data={analytics.viewsPerDay} />
+      </Skeleton>
 
-      <Skeleton
-        name="analytics-cards"
-        loading={loading}
-        style={loading ? styles.skeletonFrame : undefined}
-      >
+      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
         <StatList
           title="Entry Pages"
           items={analytics.entryPages.map(p => ({
@@ -499,5 +493,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginVertical: 10,
+    minHeight: 150,
   },
 });
