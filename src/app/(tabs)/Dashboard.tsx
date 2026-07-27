@@ -9,21 +9,12 @@ import { ProjectDetailsParams } from "@/types/NavParams";
 import { useRouter } from "expo-router";
 import { GearIcon, GlobeIcon, PlusIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  FlatList,
-  Dimensions,
-  RefreshControl,
-} from "react-native";
+import { View, Text, Pressable, StyleSheet, FlatList, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import { Skeleton } from "@/components/Skeleton";
 import { useTablet } from "@/context/TabletContext";
 
-const dvw = Dimensions.get("window").width;
 async function fetchProjects() {
   try {
     const res = await fetchWithAuth(`${process.env.EXPO_PUBLIC_BACKEND}/api/projects`);

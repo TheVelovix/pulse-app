@@ -26,3 +26,8 @@ export interface CopyScriptParams {
   close: () => void;
   projectId: string;
 }
+// Serialized by the backend with default (PascalCase) System.Text.Json naming
+export interface GaProperty {
+  Id: string;
+  DisplayName: string;
+}

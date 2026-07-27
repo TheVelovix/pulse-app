@@ -6,7 +6,14 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-n
 import { toast } from "sonner-native";
 import { Skeleton } from "@/components/Skeleton";
 import { sharedStyles } from "@/constants/commonStyles";
-import { CalendarIcon, CopyIcon, ExportIcon } from "phosphor-react-native";
+import {
+  CalendarIcon,
+  ChartLineUpIcon,
+  CopyIcon,
+  ExportIcon,
+  PlugsConnectedIcon,
+  PlugsIcon,
+} from "phosphor-react-native";
 import { colors } from "@/constants/theme";
 import * as Clipboard from "expo-clipboard";
 import { SubscriptionPlan, useSession } from "@/context/SessionContext";
@@ -15,6 +22,9 @@ import CopyScriptModal from "@/components/CopyScriptModal";
 import BackButton from "@/components/BackButton";
 import { Directory } from "expo-file-system";
 import EventSource from "react-native-sse";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
 import StatList from "@/components/StatList";
 import StatTable from "@/components/StatTable";
 import SearchConsoleList from "@/components/SearchConsoleList";
@@ -66,10 +76,18 @@ async function getSearchConsoleData(
       const data = await res.json();
       return data;
     }
+    if (res.status === 404) {
+      const text = await res.text();
+      if (text === "search-console-not-connected") {
+        throw new Error(text);
+      }
+    } else if (res.status === 500) {
+      toast.error("Failed to get search console data. Please report at: info@velovix.com");
+    }
     return [];
   } catch (e) {
-    console.log(e);
-    toast.error("Failed to fetch Search Console Data.");
+    if (e instanceof Error && e.message === "search-console-not-connected") throw e;
+    else toast.error("Failed to get search console data. Please report at: info@velovix.com");
     return [];
   }
 }
@@ -109,6 +127,7 @@ export default function ProjectDetails() {
   });
   const [loading, startTransition] = useTransition();
   const session = useSession();
+  const router = useRouter();
   useEffect(() => {
     startTransition(async () => {
       const data = await getProjectAnalytics(params.id, days, from, to);
@@ -173,6 +192,21 @@ export default function ProjectDetails() {
   }, []);
   const [liveVisitors, setLiveVisitors] = useState<number>(0);
   const [searchConsoleData, setSearchConsoleData] = useState<GoogleSearchConsoleData[]>([]);
+  // Defaulted to true to keep the button hidden while requests are in progress
+  const [searchConsoleConnected, setSearchConsoleConnected] = useState(true);
+  const refetchSearchConsoleData = useCallback(async () => {
+    try {
+      const data = await getSearchConsoleData(params.id);
+      setSearchConsoleData(data);
+      setSearchConsoleConnected(true);
+      return true;
+    } catch (e) {
+      if (e instanceof Error && e.message === "search-console-not-connected") {
+        setSearchConsoleConnected(false);
+      }
+      return false;
+    }
+  }, [params.id]);
   useEffect(() => {
     if (session.user?.subscriptionPlan !== SubscriptionPlan.PRO) return;
     let eventSource: EventSource;
@@ -196,12 +230,53 @@ export default function ProjectDetails() {
       eventSource.addEventListener("error", () => {
         eventSource.close();
       });
-      const googleData = await getSearchConsoleData(params.id);
-      setSearchConsoleData(googleData);
+      await refetchSearchConsoleData();
     })();
 
     return () => eventSource?.close();
-  }, [session.user?.subscriptionPlan]);
+  }, [session.user?.subscriptionPlan, params.id, refetchSearchConsoleData]);
+  const [connectingSearchConsole, setConnectingSearchConsole] = useState(false);
+  const connectSearchConsole = useCallback(async () => {
+    setConnectingSearchConsole(true);
+    try {
+      const { accessToken } = await getTokens();
+      const connectUrl = `${process.env.EXPO_PUBLIC_BACKEND}/api/search-console/connect/${params.id}?token=${encodeURIComponent(accessToken!)}`;
+      // The callback redirects to the web dashboard, which the app cannot intercept,
+      // so the browser is dismissed by hand. The tokens are stored server-side either
+      // way, so just re-check the connection however the browser was closed.
+      await WebBrowser.openBrowserAsync(connectUrl);
+      if (await refetchSearchConsoleData()) toast.success("Google Search Console connected.");
+    } finally {
+      setConnectingSearchConsole(false);
+    }
+  }, [params.id, refetchSearchConsoleData]);
+  const [connectingGa, setConnectingGa] = useState(false);
+  const importFromGa = useCallback(async () => {
+    setConnectingGa(true);
+    try {
+      const { accessToken } = await getTokens();
+      const connectUrl = `${process.env.EXPO_PUBLIC_BACKEND}/api/ga-import/connect/${params.id}?platform=mobile&token=${encodeURIComponent(accessToken!)}`;
+      const result = await WebBrowser.openAuthSessionAsync(connectUrl, "pulse://");
+      // On Android the redirect arrives through Linking, so expo-router navigates to
+      // /GaImport by itself. On iOS the auth session swallows it, so route manually.
+      if (result.type !== "success" || Platform.OS === "android") return;
+      const { queryParams } = Linking.parse(result.url);
+      const properties = queryParams?.properties;
+      const gaAccessToken = queryParams?.accessToken;
+      if (typeof properties !== "string" || typeof gaAccessToken !== "string") {
+        toast.error("Failed to read Google Analytics properties.");
+        return;
+      }
+      router.push({
+        pathname: "/GaImport",
+        params: { projectId: params.id, properties, accessToken: gaAccessToken },
+      });
+    } catch {
+      toast.error("Failed to connect to Google Analytics.");
+    } finally {
+      setConnectingGa(false);
+    }
+  }, [params.id, router]);
   const { isTablet, isLandscape } = useTablet();
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 15 }}>
@@ -302,7 +377,11 @@ export default function ProjectDetails() {
         >
           <Pressable
             onPress={() => setShowCopyScript(true)}
-            style={[styles.buttons, sharedStyles.cards]}
+            style={({ pressed }) => [
+              styles.buttons,
+              sharedStyles.cards,
+              pressed && { backgroundColor: colors.background },
+            ]}
           >
             <CopyIcon color="white" />
             <Text style={sharedStyles.labels}>Copy Script</Text>
@@ -314,9 +393,59 @@ export default function ProjectDetails() {
             loading={loading}
             style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}
           >
-            <Pressable onPress={exportCsv} style={[styles.buttons, sharedStyles.cards]}>
+            <Pressable
+              onPress={exportCsv}
+              style={({ pressed }) => [
+                styles.buttons,
+                sharedStyles.cards,
+                pressed && { backgroundColor: colors.background },
+              ]}
+            >
               <ExportIcon color="white" />
               <Text style={sharedStyles.labels}>Export CSV</Text>
+            </Pressable>
+          </Skeleton>
+        )}
+        {!searchConsoleConnected && session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
+          <Skeleton
+            loading={loading}
+            style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}
+          >
+            <Pressable
+              disabled={connectingSearchConsole}
+              onPress={connectSearchConsole}
+              style={({ pressed }) => [
+                styles.buttons,
+                sharedStyles.cards,
+                pressed && { backgroundColor: colors.background },
+                connectingSearchConsole && { opacity: 0.7 },
+              ]}
+            >
+              {connectingSearchConsole ? (
+                <PlugsConnectedIcon color="white" />
+              ) : (
+                <PlugsIcon color="white" />
+              )}
+              <Text style={sharedStyles.labels}>
+                {connectingSearchConsole ? "Connecting..." : "Connect Google Search Console"}
+              </Text>
+            </Pressable>
+          </Skeleton>
+        )}
+        {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
+          <Skeleton
+            loading={loading}
+            style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}
+          >
+            <Pressable
+              disabled={connectingGa}
+              onPress={importFromGa}
+              style={[styles.buttons, sharedStyles.cards, connectingGa && { opacity: 0.7 }]}
+            >
+              <ChartLineUpIcon color="white" />
+              <Text style={sharedStyles.labels}>
+                {connectingGa ? "Connecting..." : "Import from Google Analytics"}
+              </Text>
             </Pressable>
           </Skeleton>
         )}

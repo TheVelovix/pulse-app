@@ -1,7 +1,7 @@
 import { useSession } from "@/context/SessionContext";
 import { Redirect } from "expo-router";
 
-export default function index() {
+export default function Index() {
   const session = useSession();
   if (session.user) {
     return <Redirect href="/(tabs)/Dashboard" />;

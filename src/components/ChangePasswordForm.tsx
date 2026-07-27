@@ -4,15 +4,7 @@ import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
 import { LockIcon } from "phosphor-react-native";
 import { useEffect, useState, useTransition } from "react";
-import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  Text,
-  Pressable,
-} from "react-native";
+import { Modal, StyleSheet, useWindowDimensions, View, Text, Pressable } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut, FlipInXUp, FlipOutXUp } from "react-native-reanimated";
 import { toast, Toaster } from "sonner-native";

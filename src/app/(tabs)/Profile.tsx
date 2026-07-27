@@ -12,7 +12,6 @@ import { CrownIcon, KeyIcon, LightningIcon, PlusIcon, TrashIcon } from "phosphor
 import { RefreshControl } from "react-native-gesture-handler";
 import { ApiKey } from "@/types/Profile";
 import ApiKeysModal from "@/components/ApiKeysModal";
-import { useTablet } from "@/context/TabletContext";
 import BackButton from "@/components/BackButton";
 
 const store = process.env.EXPO_PUBLIC_STORE;
@@ -108,7 +107,6 @@ export default function Profile() {
       toast.success("Key Deleted.");
     }
   }, []);
-  const { isTablet, isLandscape } = useTablet();
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
       <ScrollView

@@ -6,3 +6,10 @@ export interface ProjectDetailsParams {
   isPublic: string;
   publicSlug: string;
 }
+
+export interface GaImportParams {
+  projectId: string;
+  // JSON-encoded GaProperty[], serialized by the backend's OAuth callback
+  properties: string;
+  accessToken: string;
+}
