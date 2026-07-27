@@ -19,6 +19,7 @@ import StatList from "@/components/StatList";
 import StatTable from "@/components/StatTable";
 import SearchConsoleList from "@/components/SearchConsoleList";
 import ViewsChart from "@/components/ViewsChart";
+import { useTablet } from "@/context/TabletContext";
 
 async function getProjectAnalytics(
   id: string,
@@ -115,10 +116,6 @@ export default function ProjectDetails() {
         setAnalytics(data);
       }
     });
-    if (days && (from || to)) {
-      setFrom(undefined);
-      setTo(undefined);
-    }
   }, [days, from, to]);
   async function copyPublicLink() {
     if (Platform.OS === "ios") {
@@ -193,7 +190,7 @@ export default function ProjectDetails() {
       );
 
       eventSource.addEventListener("message", e => {
-        setLiveVisitors(parseInt(e.data!));
+        setLiveVisitors(parseInt(e.data!, 10));
       });
 
       eventSource.addEventListener("error", () => {
@@ -204,12 +201,13 @@ export default function ProjectDetails() {
     })();
 
     return () => eventSource?.close();
-  }, []);
+  }, [session.user?.subscriptionPlan]);
+  const { isTablet, isLandscape } = useTablet();
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 15 }}>
       <BackButton />
       <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
-        <Text style={sharedStyles.title}>{params.name} Analyitcs</Text>
+        <Text style={sharedStyles.title}>{params.name} Analytics</Text>
         {params.isPublic === "true" && (
           <>
             <Text style={sharedStyles.title}>Public slug: {params.publicSlug}</Text>
@@ -228,17 +226,23 @@ export default function ProjectDetails() {
         )}
       </Skeleton>
       {/*Date Filters*/}
-      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
-        <View style={{ flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap" }}>
-          {DATE_RANGES.map((range, index) => {
-            if (
-              range.label === "All time" &&
-              session.user?.subscriptionPlan !== SubscriptionPlan.PRO
-            )
-              return;
-            return (
+      <View
+        style={[
+          { flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap" },
+          isTablet && !isLandscape && { width: "55%" },
+          isTablet && isLandscape && { width: "35%" },
+        ]}
+      >
+        {DATE_RANGES.map((range, index) => {
+          if (range.label === "All time" && session.user?.subscriptionPlan !== SubscriptionPlan.PRO)
+            return;
+          return (
+            <Skeleton
+              key={index}
+              loading={loading}
+              style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}
+            >
               <Pressable
-                key={index}
                 style={({ pressed }) => [
                   sharedStyles.cards,
                   pressed && { backgroundColor: colors.background },
@@ -254,9 +258,14 @@ export default function ProjectDetails() {
               >
                 <Text style={sharedStyles.labels}>{range.label}</Text>
               </Pressable>
-            );
-          })}
+            </Skeleton>
+          );
+        })}
 
+        <Skeleton
+          loading={loading}
+          style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}
+        >
           <Pressable
             style={({ pressed }) => [
               sharedStyles.cards,
@@ -275,12 +284,22 @@ export default function ProjectDetails() {
               </Text>
             )}
           </Pressable>
-        </View>
-      </Skeleton>
+        </Skeleton>
+      </View>
 
       {/*Buttons*/}
-      <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-around" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          justifyContent: !isTablet ? "space-around" : "flex-start",
+          gap: !isTablet ? 0 : 10,
+        }}
+      >
+        <Skeleton
+          loading={loading}
+          style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}
+        >
           <Pressable
             onPress={() => setShowCopyScript(true)}
             style={[styles.buttons, sharedStyles.cards]}
@@ -288,18 +307,31 @@ export default function ProjectDetails() {
             <CopyIcon color="white" />
             <Text style={sharedStyles.labels}>Copy Script</Text>
           </Pressable>
+        </Skeleton>
 
-          {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
+        {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
+          <Skeleton
+            loading={loading}
+            style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}
+          >
             <Pressable onPress={exportCsv} style={[styles.buttons, sharedStyles.cards]}>
               <ExportIcon color="white" />
               <Text style={sharedStyles.labels}>Export CSV</Text>
             </Pressable>
-          )}
-        </View>
-      </Skeleton>
+          </Skeleton>
+        )}
+      </View>
 
+      {/*Main Stats*/}
       <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-around" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent: !isTablet ? "space-around" : "flex-start",
+            gap: !isTablet ? 0 : 20,
+          }}
+        >
           <View style={sharedStyles.cards}>
             <Text style={sharedStyles.labelsMuted}>Total Views</Text>
             <Text style={sharedStyles.title}>{analytics?.totalViews}</Text>
@@ -328,20 +360,45 @@ export default function ProjectDetails() {
       </Skeleton>
 
       <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
-        <StatList
-          title="Entry Pages"
-          items={analytics.entryPages.map(p => ({
-            label: p.url,
-            count: p.count,
-          }))}
-        />
-        <StatList
-          title="Top Pages"
-          items={analytics.topPages.map(p => ({
-            label: p.url,
-            count: p.count,
-          }))}
-        />
+        {!isTablet || !isLandscape ? (
+          <>
+            <StatList
+              title="Entry Pages"
+              items={analytics.entryPages.map(p => ({
+                label: p.url,
+                count: p.count,
+              }))}
+            />
+            <StatList
+              title="Top Pages"
+              items={analytics.topPages.map(p => ({
+                label: p.url,
+                count: p.count,
+              }))}
+            />
+          </>
+        ) : (
+          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <StatList
+                title="Entry Pages"
+                items={analytics.entryPages.map(p => ({
+                  label: p.url,
+                  count: p.count,
+                }))}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <StatList
+                title="Top Pages"
+                items={analytics.topPages.map(p => ({
+                  label: p.url,
+                  count: p.count,
+                }))}
+              />
+            </View>
+          </View>
+        )}
         {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
           <StatList
             title="Time on Page (avg. seconds)"
@@ -351,20 +408,48 @@ export default function ProjectDetails() {
             }))}
           />
         )}
-        <StatList
-          title="Top Referrers"
-          items={analytics.topReferrers.map(r => ({
-            label: r.referrer ?? "Direct",
-            count: r.count,
-          }))}
-        />
-        <StatList
-          title="AI Referrers"
-          items={analytics.aiTraffic.map(r => ({
-            label: r.referrer ?? "Direct",
-            count: r.count,
-          }))}
-        />
+
+        {/*Referrers*/}
+        {!isTablet || !isLandscape ? (
+          <>
+            <StatList
+              title="Top Referrers"
+              items={analytics.topReferrers.map(r => ({
+                label: r.referrer ?? "Direct",
+                count: r.count,
+              }))}
+            />
+            <StatList
+              title="AI Referrers"
+              items={analytics.aiTraffic.map(r => ({
+                label: r.referrer ?? "Direct",
+                count: r.count,
+              }))}
+            />
+          </>
+        ) : (
+          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <StatList
+                title="Top Referrers"
+                items={analytics.topReferrers.map(r => ({
+                  label: r.referrer ?? "Direct",
+                  count: r.count,
+                }))}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <StatList
+                title="AI Referrers"
+                items={analytics.aiTraffic.map(r => ({
+                  label: r.referrer ?? "Direct",
+                  count: r.count,
+                }))}
+              />
+            </View>
+          </View>
+        )}
+
         <StatList
           title="Outbound Links"
           items={analytics.outboundLinks.map(r => ({
@@ -373,95 +458,233 @@ export default function ProjectDetails() {
           }))}
         />
 
-        <StatTable
-          title="Devices"
-          items={analytics.devices}
-          columns={[
-            { key: "deviceFamily", label: "Family" },
-            { key: "deviceBrand", label: "Brand" },
-            { key: "deviceModel", label: "Model" },
-            { key: "isSpider", label: "Is Spider" },
-            { key: "count", label: "Views" },
-          ]}
-        />
-        <StatTable
-          title="Operating Systems"
-          items={analytics.operatingSystems}
-          columns={[
-            { key: "os", label: "OS Family" },
-            { key: "osMajor", label: "OS Major" },
-            { key: "count", label: "Count" },
-          ]}
-        />
-        <StatTable
-          title="Browsers"
-          items={analytics.browsers}
-          columns={[
-            { key: "browser", label: "Browser" },
-            { key: "browserMajor", label: "Version" },
-            { key: "count", label: "Views" },
-          ]}
-        />
-        <StatList
-          title="Countries"
-          items={analytics.countries.map(c => ({
-            label: c.country ?? "Unknown",
-            count: c.count,
-          }))}
-        />
-        {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
-          <StatList
-            title="Custom Events"
-            items={analytics.customEvents.map(e => ({
-              label: e.totalRevenue != null ? `${e.name} (€${e.totalRevenue.toFixed(2)})` : e.name,
-              count: e.count,
-            }))}
-          />
+        {/*Devices and OS-es*/}
+        {!isTablet || !isLandscape ? (
+          <>
+            <StatTable
+              title="Devices"
+              items={analytics.devices}
+              columns={[
+                { key: "deviceFamily", label: "Family" },
+                { key: "deviceBrand", label: "Brand" },
+                { key: "deviceModel", label: "Model" },
+                { key: "isSpider", label: "Is Spider" },
+                { key: "count", label: "Views" },
+              ]}
+            />
+            <StatTable
+              title="Operating Systems"
+              items={analytics.operatingSystems}
+              columns={[
+                { key: "os", label: "OS Family" },
+                { key: "osMajor", label: "OS Major" },
+                { key: "count", label: "Count" },
+              ]}
+            />
+          </>
+        ) : (
+          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <StatTable
+                title="Devices"
+                items={analytics.devices}
+                columns={[
+                  { key: "deviceFamily", label: "Family" },
+                  { key: "deviceBrand", label: "Brand" },
+                  { key: "deviceModel", label: "Model" },
+                  { key: "isSpider", label: "Is Spider" },
+                  { key: "count", label: "Views" },
+                ]}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <StatTable
+                title="Operating Systems"
+                items={analytics.operatingSystems}
+                columns={[
+                  { key: "os", label: "OS Family" },
+                  { key: "osMajor", label: "OS Major" },
+                  { key: "count", label: "Count" },
+                ]}
+              />
+            </View>
+          </View>
+        )}
+
+        {/*Browsers and Countries*/}
+        {!isTablet || !isLandscape ? (
+          <>
+            <StatTable
+              title="Browsers"
+              items={analytics.browsers}
+              columns={[
+                { key: "browser", label: "Browser" },
+                { key: "browserMajor", label: "Version" },
+                { key: "count", label: "Views" },
+              ]}
+            />
+            <StatList
+              title="Countries"
+              items={analytics.countries.map(c => ({
+                label: c.country ?? "Unknown",
+                count: c.count,
+              }))}
+            />
+          </>
+        ) : (
+          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <StatTable
+                title="Browsers"
+                items={analytics.browsers}
+                columns={[
+                  { key: "browser", label: "Browser" },
+                  { key: "browserMajor", label: "Version" },
+                  { key: "count", label: "Views" },
+                ]}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <StatList
+                title="Countries"
+                items={analytics.countries.map(c => ({
+                  label: c.country ?? "Unknown",
+                  count: c.count,
+                }))}
+              />
+            </View>
+          </View>
         )}
         {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
-          <SearchConsoleList data={searchConsoleData} />
+          <>
+            {!isTablet || !isLandscape ? (
+              <>
+                <StatList
+                  title="Custom Events"
+                  items={analytics.customEvents.map(e => ({
+                    label:
+                      e.totalRevenue != null ? `${e.name} (€${e.totalRevenue.toFixed(2)})` : e.name,
+                    count: e.count,
+                  }))}
+                />
+                <SearchConsoleList data={searchConsoleData} />
+              </>
+            ) : (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <StatList
+                    title="Custom Events"
+                    items={analytics.customEvents.map(e => ({
+                      label:
+                        e.totalRevenue != null
+                          ? `${e.name} (€${e.totalRevenue.toFixed(2)})`
+                          : e.name,
+                      count: e.count,
+                    }))}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <SearchConsoleList data={searchConsoleData} />
+                </View>
+              </View>
+            )}
+          </>
         )}
         {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
-          <View>
+          <>
             <Text style={[sharedStyles.title, { textAlign: "center", marginVertical: 20 }]}>
               UTM Stats
             </Text>
-            <StatList
-              title="Sources"
-              items={analytics.utmStats.topSources.map(s => ({
-                label: s.source ?? "Unknown",
-                count: s.count,
-              }))}
-            />
-            <StatList
-              title="Mediums"
-              items={analytics.utmStats.topMediums.map(m => ({
-                label: m.medium ?? "Unknown",
-                count: m.count,
-              }))}
-            />
-            <StatList
-              title="Campaigns"
-              items={analytics.utmStats.topCampaigns.map(c => ({
-                label: c.campaign ?? "Unknown",
-                count: c.count,
-              }))}
-            />
-            <StatList
-              title="Content"
-              items={analytics.utmStats.topContents.map(c => ({
-                label: c.content ?? "Unknown",
-                count: c.count,
-              }))}
-            />
-            <StatList
-              title="Terms"
-              items={analytics.utmStats.topTerms.map(t => ({
-                label: t.term ?? "Unknown",
-                count: t.count,
-              }))}
-            />
-          </View>
+            {!isTablet ? (
+              <View>
+                <StatList
+                  title="Sources"
+                  items={analytics.utmStats.topSources.map(s => ({
+                    label: s.source ?? "Unknown",
+                    count: s.count,
+                  }))}
+                />
+                <StatList
+                  title="Mediums"
+                  items={analytics.utmStats.topMediums.map(m => ({
+                    label: m.medium ?? "Unknown",
+                    count: m.count,
+                  }))}
+                />
+                <StatList
+                  title="Campaigns"
+                  items={analytics.utmStats.topCampaigns.map(c => ({
+                    label: c.campaign ?? "Unknown",
+                    count: c.count,
+                  }))}
+                />
+                <StatList
+                  title="Content"
+                  items={analytics.utmStats.topContents.map(c => ({
+                    label: c.content ?? "Unknown",
+                    count: c.count,
+                  }))}
+                />
+                <StatList
+                  title="Terms"
+                  items={analytics.utmStats.topTerms.map(t => ({
+                    label: t.term ?? "Unknown",
+                    count: t.count,
+                  }))}
+                />
+              </View>
+            ) : (
+              <>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <StatList
+                      title="Sources"
+                      items={analytics.utmStats.topSources.map(s => ({
+                        label: s.source ?? "Unknown",
+                        count: s.count,
+                      }))}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <StatList
+                      title="Mediums"
+                      items={analytics.utmStats.topMediums.map(m => ({
+                        label: m.medium ?? "Unknown",
+                        count: m.count,
+                      }))}
+                    />
+                  </View>
+                </View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <StatList
+                      title="Campaigns"
+                      items={analytics.utmStats.topCampaigns.map(c => ({
+                        label: c.campaign ?? "Unknown",
+                        count: c.count,
+                      }))}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <StatList
+                      title="Content"
+                      items={analytics.utmStats.topContents.map(c => ({
+                        label: c.content ?? "Unknown",
+                        count: c.count,
+                      }))}
+                    />
+                  </View>
+                </View>
+                <StatList
+                  title="Terms"
+                  items={analytics.utmStats.topTerms.map(t => ({
+                    label: t.term ?? "Unknown",
+                    count: t.count,
+                  }))}
+                />
+              </>
+            )}
+          </>
         )}
       </Skeleton>
       <DateRangePicker

@@ -43,13 +43,12 @@ export async function fetchWithAuth(
     }
     const data = await refreshRes.json();
     await setTokens(data.accessToken, data.refreshToken);
-    const { accessToken, refreshToken } = await getTokens();
     res = await fetch(input, {
       ...init,
       headers: {
         ...init.headers,
-        Authorization: `Bearer ${accessToken}`,
-        RefreshToken: refreshToken!,
+        Authorization: `Bearer ${data.accessToken}`,
+        RefreshToken: data.refreshToken!,
         "X-Device-Type": "mobile",
       },
     });

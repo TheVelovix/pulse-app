@@ -4,22 +4,12 @@ import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
 import { CopyIcon, KeyIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useState, useTransition } from "react";
-import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  Text,
-  Pressable,
-} from "react-native";
+import { Modal, StyleSheet, useWindowDimensions, View, Text, Pressable } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut, FlipInXUp, FlipOutXUp } from "react-native-reanimated";
 import { toast, Toaster } from "sonner-native";
 import * as Clipboard from "expo-clipboard";
-
-const dvh = Dimensions.get("window").height;
-const dvw = Dimensions.get("window").width;
+import { useTablet } from "@/context/TabletContext";
 
 export default function ApiKeysModal({ isVisible, close }: ProfileFormProps) {
   const dimensions = useWindowDimensions();
@@ -65,6 +55,7 @@ export default function ApiKeysModal({ isVisible, close }: ProfileFormProps) {
     await Clipboard.setStringAsync(key);
     toast.success("Key Copied.");
   }, [key]);
+  const { isTablet, isLandscape } = useTablet();
   return (
     <Modal
       visible={isVisible}
@@ -74,8 +65,20 @@ export default function ApiKeysModal({ isVisible, close }: ProfileFormProps) {
         backgroundColor: "rgba(0,0,0,.7)",
       }}
     >
-      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.apiKeysModal}>
-        <Animated.View entering={FlipInXUp} exiting={FlipOutXUp} style={styles.keyForm}>
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={[styles.apiKeysModal, { height: dimensions.height, width: dimensions.width }]}
+      >
+        <Animated.View
+          entering={FlipInXUp}
+          exiting={FlipOutXUp}
+          style={[
+            styles.keyForm,
+            isTablet && isLandscape && { marginTop: "5%", width: "50%" },
+            isTablet && !isLandscape && { marginTop: "15%", width: "70%" },
+          ]}
+        >
           <View style={{ flexDirection: "row", gap: 10 }}>
             {/*Key Icon*/}
             <View
@@ -97,7 +100,8 @@ export default function ApiKeysModal({ isVisible, close }: ProfileFormProps) {
               {keyCreated && (
                 <Text style={[sharedStyles.labels, { color: colors.textMuted }]}>
                   Copy
-                  <Text style={sharedStyles.labels}> {keyName} </Text> now. It won&apos;t be shown again.
+                  <Text style={sharedStyles.labels}> {keyName} </Text> now. It won&apos;t be shown
+                  again.
                 </Text>
               )}
             </View>
@@ -116,7 +120,6 @@ export default function ApiKeysModal({ isVisible, close }: ProfileFormProps) {
                   }}
                   autoCapitalize="none"
                   editable={!reqPending}
-                  keyboardType="numeric"
                   placeholderTextColor="#ffffff45"
                   onSubmitEditing={createKey}
                 />
@@ -195,8 +198,6 @@ const styles = StyleSheet.create({
   apiKeysModal: {
     position: "absolute",
     zIndex: 5,
-    height: dvh,
-    width: dvw,
     backgroundColor: "rgba(0,0,0,.7)",
     alignItems: "center",
   },

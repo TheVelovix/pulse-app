@@ -5,22 +5,13 @@ import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
 import { EnvelopeIcon } from "phosphor-react-native";
 import { useEffect, useState, useTransition } from "react";
-import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  Text,
-  Pressable,
-} from "react-native";
+import { Modal, StyleSheet, useWindowDimensions, View, Text, Pressable } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut, FlipInXUp, FlipOutXUp } from "react-native-reanimated";
 import { toast, Toaster } from "sonner-native";
 import * as z from "zod";
+import { useTablet } from "@/context/TabletContext";
 
-const dvh = Dimensions.get("window").height;
-const dvw = Dimensions.get("window").width;
 const emailSchema = z.email("Invalid Email Address.");
 export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
   const dimensions = useWindowDimensions();
@@ -101,17 +92,34 @@ export default function NewEmailForm({ isVisible, close }: ProfileFormProps) {
       setVerificationCode("");
     }
   }, [isVisible]);
+  const { isTablet, isLandscape } = useTablet();
   return (
     <Modal
       visible={isVisible}
+      supportedOrientations={["portrait", "landscape"]}
       style={{
         height: dimensions.height,
         width: dimensions.width,
         backgroundColor: "rgba(0,0,0,.7)",
       }}
     >
-      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.emailModal}>
-        <Animated.View entering={FlipInXUp} exiting={FlipOutXUp} style={styles.newEmailForm}>
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={[styles.emailModal, { width: dimensions.width, height: dimensions.height }]}
+      >
+        <Animated.View
+          entering={FlipInXUp}
+          exiting={FlipOutXUp}
+          style={[
+            styles.newEmailForm,
+            isTablet && !isLandscape
+              ? { width: "70%", marginTop: "15%" }
+              : isTablet && isLandscape
+                ? { width: "50%", marginTop: "5%" }
+                : {},
+          ]}
+        >
           <View style={{ flexDirection: "row", gap: 10 }}>
             {/*Envelope*/}
             <View
@@ -203,8 +211,6 @@ const styles = StyleSheet.create({
   emailModal: {
     position: "absolute",
     zIndex: 5,
-    height: dvh,
-    width: dvw,
     backgroundColor: "rgba(0,0,0,.7)",
     alignItems: "center",
   },

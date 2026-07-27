@@ -96,6 +96,6 @@ export type GoogleSearchConsoleData = {
   query: string;
   clicks: number;
   impressions: number;
-  ctr: float;
-  position: float;
+  ctr: number;
+  position: number;
 };

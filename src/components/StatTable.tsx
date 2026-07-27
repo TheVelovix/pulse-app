@@ -17,7 +17,7 @@ export default function StatTable<T extends Record<string, string | number | boo
         <Text style={[sharedStyles.labelsMuted, styles.emptyLabel]}>No data</Text>
       ) : (
         <ScrollView horizontal>
-          <View>
+          <View style={{ minWidth: "100%" }}>
             <View style={[styles.row, styles.headerRow]}>
               {columns.map(col => (
                 <Text key={String(col.key)} style={[sharedStyles.labelsMuted, styles.headerCell]}>
@@ -27,13 +27,7 @@ export default function StatTable<T extends Record<string, string | number | boo
             </View>
             <ScrollView style={styles.body}>
               {items.map((item, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.row,
-                    i !== items.length - 1 && styles.bodyRow,
-                  ]}
-                >
+                <View key={i} style={[styles.row, i !== items.length - 1 && styles.bodyRow]}>
                   {columns.map(col => (
                     <Text key={String(col.key)} style={[sharedStyles.labels, styles.cell]}>
                       {col.key === "isSpider"

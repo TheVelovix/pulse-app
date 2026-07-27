@@ -1,24 +1,13 @@
 import { colors } from "@/constants/theme";
 import { sharedStyles } from "@/constants/commonStyles";
-import { CopyIcon, KeyIcon } from "phosphor-react-native";
+import { CopyIcon } from "phosphor-react-native";
 import { useCallback, useMemo } from "react";
-import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  Text,
-  Pressable,
-} from "react-native";
-import { TextInput } from "react-native-gesture-handler";
+import { Modal, StyleSheet, useWindowDimensions, View, Text, Pressable } from "react-native";
 import Animated, { FadeIn, FadeOut, FlipInXUp, FlipOutXUp } from "react-native-reanimated";
 import { toast, Toaster } from "sonner-native";
 import * as Clipboard from "expo-clipboard";
 import { CopyScriptParams } from "@/types/Dashboard";
-
-const dvh = Dimensions.get("window").height;
-const dvw = Dimensions.get("window").width;
+import { useTablet } from "@/context/TabletContext";
 
 export default function CopyScriptModal({ isVisible, close, projectId }: CopyScriptParams) {
   const dimensions = useWindowDimensions();
@@ -29,6 +18,7 @@ export default function CopyScriptModal({ isVisible, close, projectId }: CopyScr
     await Clipboard.setStringAsync(script);
     toast.success("Script Copied.");
   }, [projectId]);
+  const { isTablet, isLandscape } = useTablet();
   return (
     <Modal
       visible={isVisible}
@@ -38,8 +28,20 @@ export default function CopyScriptModal({ isVisible, close, projectId }: CopyScr
         backgroundColor: "rgba(0,0,0,.7)",
       }}
     >
-      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.scriptModal}>
-        <Animated.View entering={FlipInXUp} exiting={FlipOutXUp} style={styles.scriptWrapper}>
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={[styles.scriptModal, { width: dimensions.width, height: dimensions.height }]}
+      >
+        <Animated.View
+          entering={FlipInXUp}
+          exiting={FlipOutXUp}
+          style={[
+            styles.scriptWrapper,
+            isTablet && isLandscape && { marginTop: "5%", width: "50%" },
+            isTablet && !isLandscape && { marginTop: "15%", width: "70%" },
+          ]}
+        >
           <View style={{ flexDirection: "row", gap: 10 }}>
             {/*Key Icon*/}
             <View
@@ -102,8 +104,6 @@ const styles = StyleSheet.create({
   scriptModal: {
     position: "absolute",
     zIndex: 5,
-    height: dvh,
-    width: dvw,
     backgroundColor: "rgba(0,0,0,.7)",
     alignItems: "center",
   },

@@ -7,7 +7,7 @@ import { fetchWithAuth, parseMonth } from "@/lib/lib";
 import { Project } from "@/types/Dashboard";
 import { ProjectDetailsParams } from "@/types/NavParams";
 import { useRouter } from "expo-router";
-import { GearIcon, PlusIcon } from "phosphor-react-native";
+import { GearIcon, GlobeIcon, PlusIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   View,
@@ -21,6 +21,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import { Skeleton } from "@/components/Skeleton";
+import { useTablet } from "@/context/TabletContext";
 
 const dvw = Dimensions.get("window").width;
 async function fetchProjects() {
@@ -77,6 +78,8 @@ export default function Dashboard() {
     await fetchProjects();
     setRefreshing(false);
   }, []);
+  const { isTablet, isLandscape } = useTablet();
+  const numColumns = !isTablet ? 1 : isTablet && !isLandscape ? 2 : 3;
   return (
     <View
       style={{
@@ -105,10 +108,11 @@ export default function Dashboard() {
       </View>
       <Skeleton loading={loading} style={loading ? styles.skeletonFrame : undefined}>
         <FlatList
+          key={numColumns}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           data={projects}
           keyExtractor={item => item.id}
-          numColumns={dvw < 640 ? 1 : 2}
+          numColumns={numColumns}
           renderItem={({ item, index }) => {
             const createdAt = new Date(item.createdAt);
             return (
@@ -116,6 +120,7 @@ export default function Dashboard() {
                 style={({ pressed }) => [
                   styles.projects,
                   pressed && { backgroundColor: "rgba(255,255,255,.2)" },
+                  { width: !isTablet ? "90%" : isTablet && !isLandscape ? "45%" : "30%" },
                 ]}
                 onPress={() => {
                   router.push({
@@ -132,9 +137,18 @@ export default function Dashboard() {
                   setSelectedProject(index);
                 }}
               >
-                <Text style={[sharedStyles.labels, { fontSize: 18, marginBottom: 10 }]}>
-                  {item.name}
-                </Text>
+                <View style={{ flexDirection: "row" }}>
+                  <Text
+                    style={[
+                      sharedStyles.labels,
+                      { fontSize: 18, marginBottom: 10, marginRight: 5 },
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {item.name}
+                  </Text>
+                  {item.isPublic && <GlobeIcon color={colors.accent} />}
+                </View>
                 <Text style={sharedStyles.labelsMuted}>
                   Created{" "}
                   {`${parseMonth(createdAt.getMonth())} ${createdAt.getDate()}, ${createdAt.getFullYear()}`}
@@ -204,7 +218,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginVertical: 15,
-    width: dvw < 640 ? "90%" : "49%",
     marginHorizontal: "auto",
     backgroundColor: colors.background,
   },

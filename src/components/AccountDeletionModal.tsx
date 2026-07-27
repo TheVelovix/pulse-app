@@ -5,21 +5,11 @@ import { fetchWithAuth } from "@/lib/lib";
 import { ProfileFormProps } from "@/types/Profile";
 import { TrashIcon, WarningDiamondIcon } from "phosphor-react-native";
 import { useEffect, useState, useTransition } from "react";
-import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  Text,
-  Pressable,
-} from "react-native";
+import { Modal, StyleSheet, useWindowDimensions, View, Text, Pressable } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut, FlipInXUp, FlipOutXUp } from "react-native-reanimated";
 import { toast, Toaster } from "sonner-native";
-
-const dvh = Dimensions.get("window").height;
-const dvw = Dimensions.get("window").width;
+import { useTablet } from "@/context/TabletContext";
 
 export default function AccountDeletionModal({ isVisible, close }: ProfileFormProps) {
   const dimensions = useWindowDimensions();
@@ -58,6 +48,7 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
       setEmail("");
     }
   }, [isVisible]);
+  const { isTablet, isLandscape } = useTablet();
   return (
     <Modal
       visible={isVisible}
@@ -67,8 +58,20 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
         backgroundColor: "rgba(0,0,0,.7)",
       }}
     >
-      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.accountModal}>
-        <Animated.View entering={FlipInXUp} exiting={FlipOutXUp} style={styles.deleteAccountForm}>
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={[styles.accountModal, { width: dimensions.width, height: dimensions.height }]}
+      >
+        <Animated.View
+          entering={FlipInXUp}
+          exiting={FlipOutXUp}
+          style={[
+            styles.deleteAccountForm,
+            isTablet && isLandscape && { marginTop: "5%", width: "50%" },
+            isTablet && !isLandscape && { marginTop: "15%", width: "70%" },
+          ]}
+        >
           <View style={{ flexDirection: "row", gap: 10 }}>
             {/*Danger*/}
             <View
@@ -109,7 +112,6 @@ export default function AccountDeletionModal({ isVisible, close }: ProfileFormPr
               }}
               autoCapitalize="none"
               editable={!reqPending}
-              keyboardType="numeric"
               placeholderTextColor="#ffffff45"
             />
           </View>
@@ -152,8 +154,6 @@ const styles = StyleSheet.create({
   accountModal: {
     position: "absolute",
     zIndex: 5,
-    height: dvh,
-    width: dvw,
     backgroundColor: "rgba(0,0,0,.7)",
     alignItems: "center",
   },

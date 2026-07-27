@@ -17,9 +17,8 @@ import { TextInput } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut, FlipInXUp, FlipOutXUp } from "react-native-reanimated";
 import { toast, Toaster } from "sonner-native";
 import * as z from "zod";
+import { useTablet } from "@/context/TabletContext";
 
-const dvh = Dimensions.get("window").height;
-const dvw = Dimensions.get("window").width;
 const passwordSchema = z
   .string()
   .min(8, { error: "Password must be at least 8 characters long" })
@@ -90,6 +89,7 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
       });
     }
   }, [isVisible]);
+  const { isTablet, isLandscape } = useTablet();
   return (
     <Modal
       visible={isVisible}
@@ -99,8 +99,20 @@ export default function ChangePasswordForm({ isVisible, close }: ProfileFormProp
         backgroundColor: "rgba(0,0,0,.7)",
       }}
     >
-      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.passwordModal}>
-        <Animated.View entering={FlipInXUp} exiting={FlipOutXUp} style={styles.newPasswordForm}>
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={[styles.passwordModal, { width: dimensions.width, height: dimensions.height }]}
+      >
+        <Animated.View
+          entering={FlipInXUp}
+          exiting={FlipOutXUp}
+          style={[
+            styles.newPasswordForm,
+            isTablet && isLandscape && { marginTop: "5%", width: "50%" },
+            isTablet && !isLandscape && { marginTop: "15%", width: "70%" },
+          ]}
+        >
           <View style={{ flexDirection: "row", gap: 10 }}>
             {/*Lock*/}
             <View
@@ -200,8 +212,6 @@ const styles = StyleSheet.create({
   passwordModal: {
     position: "absolute",
     zIndex: 5,
-    height: dvh,
-    width: dvw,
     backgroundColor: "rgba(0,0,0,.7)",
     alignItems: "center",
   },

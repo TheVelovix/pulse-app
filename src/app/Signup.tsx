@@ -1,5 +1,6 @@
 import { authStyles } from "@/constants/commonStyles";
 import { useSession } from "@/context/SessionContext";
+import { useTablet } from "@/context/TabletContext";
 import { useRouter } from "expo-router";
 import { useState, useTransition } from "react";
 import {
@@ -11,6 +12,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as z from "zod";
 
 const SignupBody = z.object({
@@ -66,10 +68,17 @@ export default function SignUp() {
       }
     });
   }
+  const { isTablet, isLandscape } = useTablet();
+  const insets = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView behavior="padding">
       <ScrollView>
-        <View style={authStyles.form}>
+        <View
+          style={[
+            authStyles.form,
+            isTablet && isLandscape && { width: "50%", marginTop: insets.top },
+          ]}
+        >
           <Text style={authStyles.title}>Create Account</Text>
           <View style={authStyles.inputsWrapper}>
             <View>

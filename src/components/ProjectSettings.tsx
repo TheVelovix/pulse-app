@@ -130,7 +130,7 @@ export default function ProjectSettings({
       }
     });
   }
-  const [showConfirmitation, setShowConfirmation] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   function deleteProject() {
     startTransition(async () => {
       try {
@@ -167,7 +167,7 @@ export default function ProjectSettings({
       animationType="fade"
       onRequestClose={handleClose}
     >
-      {showConfirmitation && (
+      {showConfirmation && (
         <Animated.View
           entering={FadeIn}
           exiting={FadeOut}

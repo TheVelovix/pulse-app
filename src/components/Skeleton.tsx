@@ -1,7 +1,9 @@
 import { ReactNode, useEffect, useState } from "react";
-import { LayoutChangeEvent, StyleSheet, View, ViewStyle } from "react-native";
+import { LayoutChangeEvent, StyleSheet, ViewStyle } from "react-native";
 import Animated, {
   Easing,
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -25,22 +27,30 @@ export function Skeleton({ loading, children, style }: SkeletonProps) {
   useEffect(() => {
     if (!loading || width === 0) return;
     translateX.value = -width;
-    translateX.value = withRepeat(
-      withTiming(width, { duration: 1200, easing: Easing.linear }),
-      -1,
-    );
+    translateX.value = withRepeat(withTiming(width, { duration: 1200, easing: Easing.linear }), -1);
   }, [loading, width, translateX]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
 
-  if (!loading) return <>{children}</>;
+  if (!loading)
+    return (
+      <Animated.View key="content" entering={FadeIn} exiting={FadeOut}>
+        {children}
+      </Animated.View>
+    );
 
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
 
   return (
-    <View style={[styles.base, style]} onLayout={onLayout}>
+    <Animated.View
+      key="skeleton"
+      entering={FadeIn}
+      exiting={FadeOut}
+      style={[styles.base, style]}
+      onLayout={onLayout}
+    >
       {width > 0 && (
         <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
           <Svg width={width} height="100%">
@@ -55,7 +65,7 @@ export function Skeleton({ loading, children, style }: SkeletonProps) {
           </Svg>
         </Animated.View>
       )}
-    </View>
+    </Animated.View>
   );
 }
 

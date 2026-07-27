@@ -12,10 +12,11 @@ import { CrownIcon, KeyIcon, LightningIcon, PlusIcon, TrashIcon } from "phosphor
 import { RefreshControl } from "react-native-gesture-handler";
 import { ApiKey } from "@/types/Profile";
 import ApiKeysModal from "@/components/ApiKeysModal";
+import { useTablet } from "@/context/TabletContext";
+import BackButton from "@/components/BackButton";
 
 const store = process.env.EXPO_PUBLIC_STORE;
 export default function Profile() {
-  // const insets = useSafeAreaInsets();
   const session = useSession();
   const [reqPending, startTransition] = useTransition();
   const [showEmailChangeModal, setShowEmailChangeModal] = useState(false);
@@ -107,6 +108,7 @@ export default function Profile() {
       toast.success("Key Deleted.");
     }
   }, []);
+  const { isTablet, isLandscape } = useTablet();
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
       <ScrollView
@@ -117,6 +119,7 @@ export default function Profile() {
         }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        <BackButton />
         <Text style={sharedStyles.title}>Account</Text>
         <Text style={sharedStyles.labelsMuted}>Manage your account and subscription.</Text>
         <View style={sharedStyles.cards}>
@@ -160,7 +163,7 @@ export default function Profile() {
               <View>
                 <Text style={[sharedStyles.labels, styles.centeredLabel]}>Password</Text>
                 <Text style={[sharedStyles.labelsMuted, styles.centeredLabel]}>
-                  We&apos;ll email you a code to confirm before changin your password.
+                  We&apos;ll email you a code to confirm before changing your password.
                 </Text>
               </View>
               <Pressable
