@@ -1,8 +1,10 @@
 import { authStyles } from "@/constants/commonStyles";
 import { useSession } from "@/context/SessionContext";
 import { useTablet } from "@/context/TabletContext";
+import Turnstile, { TurnstileHandle } from "@/components/Turnstile";
+import ResetPasswordModal from "@/components/ResetPasswordModal";
 import { useRouter } from "expo-router";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import {
   KeyboardAvoidingView,
   ScrollView,
@@ -29,23 +31,37 @@ export default function LogIn() {
   const session = useSession();
   const [requestPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   function handleLogin() {
     startTransition(async () => {
       if (!credentials.email || !credentials.password) {
         setError("Invalid credentials.");
         return;
       }
+      if (!turnstileToken) {
+        setError("Please complete the verification challenge.");
+        return;
+      }
       try {
-        await session.login({
-          email: credentials.email,
-          password: credentials.password,
-        });
+        await session.login(
+          {
+            email: credentials.email,
+            password: credentials.password,
+          },
+          turnstileToken,
+        );
       } catch (e) {
         if (e instanceof Error) {
           if (e.message === "invalid-credentials") {
             setError("Invalid credentials.");
+          } else if (e.message === "captcha-failed") {
+            setError("CAPTCHA verification failed. Please try again.");
           }
         }
+        setTurnstileToken("");
+        turnstileRef.current?.reset();
       }
     });
   }
@@ -85,8 +101,20 @@ export default function LogIn() {
                 secureTextEntry
                 autoCapitalize="none"
               />
+              <Text
+                onPress={() => setShowResetPasswordModal(true)}
+                style={[authStyles.links, { marginTop: 8, textAlign: "right" }]}
+              >
+                Forgot password?
+              </Text>
             </View>
           </View>
+
+          <Turnstile
+            ref={turnstileRef}
+            onVerify={setTurnstileToken}
+            onError={() => setTurnstileToken("")}
+          />
 
           <TouchableOpacity
             onPress={handleLogin}
@@ -118,6 +146,10 @@ export default function LogIn() {
           </Text>
         </View>
       </ScrollView>
+      <ResetPasswordModal
+        isVisible={showResetPasswordModal}
+        close={() => setShowResetPasswordModal(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

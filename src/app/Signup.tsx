@@ -1,8 +1,9 @@
 import { authStyles } from "@/constants/commonStyles";
 import { useSession } from "@/context/SessionContext";
 import { useTablet } from "@/context/TabletContext";
+import Turnstile, { TurnstileHandle } from "@/components/Turnstile";
 import { useRouter } from "expo-router";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import {
   KeyboardAvoidingView,
   ScrollView,
@@ -45,6 +46,8 @@ export default function SignUp() {
   const session = useSession();
   const [requestPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
   function handleSignUp() {
     startTransition(async () => {
       if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
@@ -55,16 +58,22 @@ export default function SignUp() {
         setError("Passwords do not match.");
         return;
       }
+      if (!turnstileToken) {
+        setError("Please complete the verification challenge.");
+        return;
+      }
       if (error) setError("");
       try {
         SignupBody.parse(credentials);
-        await session.signup(credentials);
+        await session.signup(credentials, turnstileToken);
       } catch (e) {
         if (e instanceof z.ZodError) {
           setError(e.issues[0].message);
         } else if (e instanceof Error) {
           setError(e.message);
         }
+        setTurnstileToken("");
+        turnstileRef.current?.reset();
       }
     });
   }
@@ -126,6 +135,11 @@ export default function SignUp() {
               />
             </View>
           </View>
+          <Turnstile
+            ref={turnstileRef}
+            onVerify={setTurnstileToken}
+            onError={() => setTurnstileToken("")}
+          />
           <View style={styles.tosWrapper}>
             <Text style={styles.tosMain}>
               By continuing you agree to our{" "}

@@ -1,14 +1,21 @@
 import { StyleSheet, View, Text, Pressable, ScrollView, Linking } from "react-native";
 import { colors } from "@/constants/theme";
 import { sharedStyles } from "@/constants/commonStyles";
-import { useSession } from "@/context/SessionContext";
+import { SubscriptionPlan, useSession } from "@/context/SessionContext";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner-native";
 import { capitalize, fetchWithAuth } from "@/lib/lib";
 import NewEmailForm from "@/components/NewEmailForm";
 import ChangePasswordForm from "@/components/ChangePasswordForm";
 import AccountDeletionModal from "@/components/AccountDeletionModal";
-import { CrownIcon, KeyIcon, LightningIcon, PlusIcon, TrashIcon } from "phosphor-react-native";
+import {
+  CrownIcon,
+  KeyIcon,
+  LightningIcon,
+  PlusIcon,
+  SignOutIcon,
+  TrashIcon,
+} from "phosphor-react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import { ApiKey } from "@/types/Profile";
 import ApiKeysModal from "@/components/ApiKeysModal";
@@ -84,8 +91,8 @@ export default function Profile() {
     }
   }, [session]);
   useEffect(() => {
-    fetchApiKeys();
-  }, []);
+    if (session.user && session.user?.subscriptionPlan === SubscriptionPlan.PRO) fetchApiKeys();
+  }, [session]);
   const [showApiKeysModal, setShowApiKeysModal] = useState(false);
   const hideApiKeysModal = useCallback(async () => {
     setShowApiKeysModal(false);
@@ -359,6 +366,24 @@ export default function Profile() {
           </View>
         )}
 
+        <View style={[sharedStyles.cards]}>
+          <Text style={[sharedStyles.subTitles, { marginBottom: 15 }]}>Session</Text>
+          <Pressable
+            style={({ pressed }) => [
+              styles.buttons,
+              pressed && { backgroundColor: colors.background },
+              {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              },
+            ]}
+            onPress={() => session.logout()}
+          >
+            <Text style={[sharedStyles.labels, { marginRight: 10 }]}>Log out</Text>
+            <SignOutIcon color="white" size={20} />
+          </Pressable>
+        </View>
         <View style={[sharedStyles.cards, { borderColor: colors.destructive }]}>
           <Text style={[sharedStyles.subTitles, { color: colors.destructive }]}>Danger Zone</Text>
 

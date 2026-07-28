@@ -21,6 +21,7 @@ export const authStyles = StyleSheet.create({
   },
   inputsWrapper: {
     marginTop: 50,
+    marginBottom: 15,
     gap: 30,
   },
   labels: {

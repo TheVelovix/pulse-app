@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { usePathname, useRouter } from "expo-router";
 import { toast } from "sonner-native";
-import { getTokens, setTokens } from "../lib/lib";
+import { fetchWithAuth, getTokens, setTokens } from "../lib/lib";
 
 export enum SubscriptionPlan {
   FREE = "free",
@@ -28,8 +28,8 @@ interface SignUpBody {
 interface SessionContextType {
   user: User | null;
   loading: boolean;
-  login: (credentials: LoginBody) => Promise<void>;
-  signup: (credentials: SignUpBody) => Promise<void>;
+  login: (credentials: LoginBody, turnstileToken: string) => Promise<void>;
+  signup: (credentials: SignUpBody, turnstileToken: string) => Promise<void>;
   logout: () => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -93,14 +93,14 @@ export default function SessionProvider({ children }: { children: React.ReactNod
     fetchSession();
   }, []);
 
-  async function login(credentials: LoginBody) {
+  async function login(credentials: LoginBody, turnstileToken: string) {
     const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Device-Type": "mobile",
       },
-      body: JSON.stringify(credentials),
+      body: JSON.stringify({ ...credentials, turnstileToken }),
     });
     if (!res.ok) {
       const contentType = res.headers.get("content-type");
@@ -119,14 +119,14 @@ export default function SessionProvider({ children }: { children: React.ReactNod
       setTimeout(() => router.replace("/(tabs)/Dashboard"), 1000);
     }
   }
-  async function signup(credentials: SignUpBody) {
+  async function signup(credentials: SignUpBody, turnstileToken: string) {
     const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Device-Type": "mobile",
       },
-      body: JSON.stringify({ ...credentials, turnstileToken: "" }),
+      body: JSON.stringify({ ...credentials, turnstileToken }),
     });
     if (!res.ok) {
       const contentType = res.headers.get("Content-Type") ?? "";
@@ -154,7 +154,7 @@ export default function SessionProvider({ children }: { children: React.ReactNod
         throw new Error("Unknown error occurred.");
       }
     } else {
-      toast("Account created successfully!");
+      toast.success("Account created successfully!");
       const data = await res.json();
       await setTokens(data.accessToken, data.refreshToken);
       await fetchSession();
@@ -164,7 +164,7 @@ export default function SessionProvider({ children }: { children: React.ReactNod
   async function logout() {
     const { accessToken, refreshToken } = await getTokens();
 
-    await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/logout`, {
+    await fetchWithAuth(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/logout`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${accessToken}`,
