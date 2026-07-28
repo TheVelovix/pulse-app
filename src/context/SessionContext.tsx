@@ -21,14 +21,18 @@ interface LoginBody {
 }
 
 interface SignUpBody {
+  email: string;
+  password: string;
   confirmPassword: string;
   promotionalCode?: string;
+  verificationCode: string;
 }
 
 interface SessionContextType {
   user: User | null;
   loading: boolean;
   login: (credentials: LoginBody, turnstileToken: string) => Promise<void>;
+  preSignup: (email: string, turnstileToken: string) => Promise<void>;
   signup: (credentials: SignUpBody, turnstileToken: string) => Promise<void>;
   logout: () => Promise<void>;
   refetch: () => Promise<void>;
@@ -119,6 +123,34 @@ export default function SessionProvider({ children }: { children: React.ReactNod
       setTimeout(() => router.replace("/(tabs)/Dashboard"), 1000);
     }
   }
+  async function preSignup(email: string, turnstileToken: string) {
+    const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/preSignup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Device-Type": "mobile",
+      },
+      body: JSON.stringify({ email, turnstileToken }),
+    });
+    if (!res.ok) {
+      const contentType = res.headers.get("Content-Type") ?? "";
+      if (contentType.includes("text/plain")) {
+        const responseText = await res.text();
+        switch (responseText) {
+          case "invalid-email":
+            throw new Error("Invalid email address.");
+          case "user-already-exists":
+            throw new Error("Email already in use.");
+          case "captcha-failed":
+            throw new Error("CAPTCHA verification failed. Please try again.");
+          default:
+            throw new Error("Unknown error occurred.");
+        }
+      } else {
+        throw new Error("Unknown error occurred.");
+      }
+    }
+  }
   async function signup(credentials: SignUpBody, turnstileToken: string) {
     const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND}/api/auth/signup`, {
       method: "POST",
@@ -141,6 +173,8 @@ export default function SessionProvider({ children }: { children: React.ReactNod
             throw new Error("CAPTCHA verification failed. Please try again.");
           case "invalid-promotional-code":
             throw new Error("Invalid Promotional Code");
+          case "invalid-code":
+            throw new Error("Invalid or expired verification code.");
           default:
             throw new Error("Unknown error occurred.");
         }
@@ -178,7 +212,7 @@ export default function SessionProvider({ children }: { children: React.ReactNod
 
   return (
     <SessionContext.Provider
-      value={{ user, loading, login, logout, refetch: fetchSession, signup }}
+      value={{ user, loading, login, logout, refetch: fetchSession, preSignup, signup }}
     >
       {children}
     </SessionContext.Provider>

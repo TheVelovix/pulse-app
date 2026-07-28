@@ -2,6 +2,7 @@ import { authStyles } from "@/constants/commonStyles";
 import { useSession } from "@/context/SessionContext";
 import { useTablet } from "@/context/TabletContext";
 import Turnstile, { TurnstileHandle } from "@/components/Turnstile";
+import VerificationCodeModal from "@/components/VerificationCodeModal";
 import { useRouter } from "expo-router";
 import { useRef, useState, useTransition } from "react";
 import {
@@ -48,6 +49,7 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
   const turnstileRef = useRef<TurnstileHandle>(null);
+  const [showCodeModal, setShowCodeModal] = useState(false);
   function handleSignUp() {
     startTransition(async () => {
       if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
@@ -65,7 +67,8 @@ export default function SignUp() {
       if (error) setError("");
       try {
         SignupBody.parse(credentials);
-        await session.signup(credentials, turnstileToken);
+        await session.preSignup(credentials.email, turnstileToken);
+        setShowCodeModal(true);
       } catch (e) {
         if (e instanceof z.ZodError) {
           setError(e.issues[0].message);
@@ -186,6 +189,14 @@ export default function SignUp() {
           </Text>
         </View>
       </ScrollView>
+      <VerificationCodeModal
+        isVisible={showCodeModal}
+        close={() => setShowCodeModal(false)}
+        email={credentials.email}
+        password={credentials.password}
+        confirmPassword={credentials.confirmPassword}
+        promotionalCode={credentials.promotionalCode}
+      />
     </KeyboardAvoidingView>
   );
 }
