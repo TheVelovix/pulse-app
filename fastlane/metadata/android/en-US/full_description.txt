@@ -1,0 +1,10 @@
+Pulse is a mobile client for your Pulse analytics dashboard, letting you monitor your websites on the go.
+
+Free tier includes:
+* Up to 5 projects, 30 days of data retention
+* Page views, unique visitors, and bounce rate
+* Entry pages, top pages, and referrer tracking
+* Outbound link, device, OS, and browser tracking
+* AI-based traffic source detection
+
+A paid Pro plan is available for advanced features such as unlimited projects, longer data retention, CSV export, real-time visitor counts, Google Search Console and Google Analytics integrations, and more.
