@@ -16,7 +16,8 @@
         "backgroundColor": "#000000"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.velovix.pulse"
+      "package": "com.velovix.pulse",
+      "permissions": ["com.android.vending.BILLING"]
     },
     "plugins": [
       "expo-router",

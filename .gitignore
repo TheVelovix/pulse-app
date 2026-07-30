@@ -37,8 +37,8 @@ yarn-error.*
 *.tsbuildinfo
 
 example
-
+android/app/pulse.keystore
+android/app/build
 # generated native folders
 /ios
-/android
 .env

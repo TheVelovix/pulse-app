@@ -21,7 +21,6 @@ import { ApiKey } from "@/types/Profile";
 import ApiKeysModal from "@/components/ApiKeysModal";
 import BackButton from "@/components/BackButton";
 
-const store = process.env.EXPO_PUBLIC_STORE;
 export default function Profile() {
   const session = useSession();
   const [reqPending, startTransition] = useTransition();
@@ -226,74 +225,23 @@ export default function Profile() {
               </View>
             </View>
           </View>
-          {session.user && session?.user?.subscriptionPlan === "pro" && store !== "f-droid" && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.buttons,
-                { borderColor: colors.textMuted, marginHorizontal: "auto", marginTop: 20 },
-                pressed && { backgroundColor: colors.textMutedTransparent },
-              ]}
-            >
-              <Text style={[sharedStyles.labels, { color: colors.textMuted }]}>
-                Cancel Subscription
-              </Text>
-            </Pressable>
-          )}
-          {session.user && session?.user?.subscriptionPlan === "free" && store !== "f-droid" ? (
-            <>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.buttons,
-                  {
-                    borderWidth: 0,
-                    marginHorizontal: "auto",
-                    marginTop: 20,
-                    backgroundColor: colors.accent,
-                  },
-                  pressed && { backgroundColor: colors.accentHover },
-                ]}
-              >
-                <Text style={[sharedStyles.labels, { fontFamily: "Poppins-Medium" }]}>
-                  Upgrade to Pro
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={({ pressed }) => [
-                  styles.buttons,
-                  {
-                    borderWidth: 0,
-                    marginHorizontal: "auto",
-                    marginTop: 20,
-                    backgroundColor: "black",
-                  },
-                  pressed && { backgroundColor: "rgba(0,0,0,.2)" },
-                ]}
-              >
-                <Text style={[sharedStyles.labels, { fontFamily: "Poppins-Medium" }]}>
-                  Activate Promo Code
-                </Text>
-              </Pressable>
-            </>
-          ) : (
-            <Pressable
-              style={({ pressed }) => [
-                styles.buttons,
-                {
-                  borderWidth: 0,
-                  marginHorizontal: "auto",
-                  marginTop: 20,
-                  backgroundColor: colors.accent,
-                },
-                pressed && { backgroundColor: colors.accentHover },
-              ]}
-              onPress={() => Linking.openURL("https://pulse.velovix.com/dashboard/account")}
-            >
-              <Text style={[sharedStyles.labels, { fontFamily: "Poppins-Medium" }]}>
-                Manage your subscription
-              </Text>
-            </Pressable>
-          )}
+          <Pressable
+            style={({ pressed }) => [
+              styles.buttons,
+              {
+                borderWidth: 0,
+                marginHorizontal: "auto",
+                marginTop: 20,
+                backgroundColor: colors.accent,
+              },
+              pressed && { backgroundColor: colors.accentHover },
+            ]}
+            onPress={() => Linking.openURL("https://pulse.velovix.com/dashboard/account")}
+          >
+            <Text style={[sharedStyles.labels, { fontFamily: "Poppins-Medium" }]}>
+              Manage your subscription
+            </Text>
+          </Pressable>
         </View>
 
         {session.user && session.user.subscriptionPlan === "pro" && (
