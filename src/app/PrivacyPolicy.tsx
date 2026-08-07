@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         <Text style={policyStyles.smallButtonLabel}>Back</Text>
       </Pressable>
       <Text style={policyStyles.title}>Privacy Policy</Text>
-      <Text style={policyStyles.subTitle}>Last updated: April 20, 2026</Text>
+      <Text style={policyStyles.subTitle}>Last updated: August 7, 2026</Text>
 
       <View style={policyStyles.policyWrapper}>
         {privacyPolicy.map((section, index) => {

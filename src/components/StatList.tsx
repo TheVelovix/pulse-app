@@ -1,7 +1,10 @@
 import { sharedStyles } from "@/constants/commonStyles";
 import { colors } from "@/constants/theme";
+import { getFaviconUrl } from "@/lib/lib";
 import { flag, name } from "country-emoji";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { GlobeIcon, Icon } from "phosphor-react-native";
+import { useCallback } from "react";
+import { Image, Platform, ScrollView, StyleSheet, Text, ToastAndroid, View } from "react-native";
 
 export default function StatList({
   title,
@@ -11,6 +14,10 @@ export default function StatList({
   items: { label: string; count: number }[];
 }) {
   const total = items.reduce((sum, item) => sum + item.count, 0);
+  const showAndroidToast = useCallback((label: string) => {
+    if (Platform.OS !== "android") return;
+    ToastAndroid.showWithGravity(label, ToastAndroid.SHORT, ToastAndroid.BOTTOM);
+  }, []);
   return (
     <View style={[sharedStyles.cards, styles.container]}>
       <Text style={[sharedStyles.labelsMuted, styles.title]}>{title}</Text>
@@ -18,19 +25,58 @@ export default function StatList({
         <Text style={[sharedStyles.labelsMuted, styles.emptyLabel]}>No data</Text>
       ) : (
         <ScrollView style={styles.list} nestedScrollEnabled>
-          {items.map((item, i) => (
-            <View key={i} style={styles.row}>
-              <View style={styles.barWrapper}>
-                <View
-                  style={[styles.bar, { width: `${total > 0 ? (item.count / total) * 100 : 0}%` }]}
-                />
-                <Text style={[sharedStyles.labels, styles.label]} numberOfLines={1}>
-                  {title === "Countries" ? `${flag(item.label)} ${name(item.label)}` : item.label}
-                </Text>
+          {items.map((item, i) => {
+            let ReferrerIcon: string | Icon | undefined;
+            if (title.includes("Referrers")) {
+              ReferrerIcon = getFaviconUrl(item.label) ?? GlobeIcon;
+            }
+            return (
+              <View key={i} style={styles.row}>
+                <View style={styles.barWrapper}>
+                  <View
+                    style={[
+                      styles.bar,
+                      { width: `${total > 0 ? (item.count / total) * 100 : 0}%` },
+                    ]}
+                  />
+                  {!title.includes("Referrers") ? (
+                    <Text
+                      onPress={() => showAndroidToast(item.label)}
+                      style={[sharedStyles.labels, styles.label]}
+                      numberOfLines={1}
+                    >
+                      {title === "Countries"
+                        ? `${flag(item.label)} ${name(item.label)}`
+                        : item.label}
+                    </Text>
+                  ) : (
+                    <View style={{ flexDirection: "row", paddingLeft: 5 }}>
+                      {ReferrerIcon ? (
+                        typeof ReferrerIcon === "string" ? (
+                          <Image
+                            src={getFaviconUrl(item.label)}
+                            style={{ width: 24, height: 24 }}
+                          />
+                        ) : (
+                          <ReferrerIcon />
+                        )
+                      ) : (
+                        <GlobeIcon />
+                      )}
+                      <Text
+                        onPress={() => showAndroidToast(item.label)}
+                        style={[sharedStyles.labels, styles.label]}
+                        numberOfLines={1}
+                      >
+                        {item.label}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[sharedStyles.labelsMuted, styles.count]}>{item.count}</Text>
               </View>
-              <Text style={[sharedStyles.labelsMuted, styles.count]}>{item.count}</Text>
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
       )}
     </View>

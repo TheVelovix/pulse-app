@@ -66,6 +66,11 @@ const privacyPolicy = [
       "We use your account data to provide and manage the service. Analytics data is used solely to generate the reports visible in your dashboard. We do not sell your data or your visitors' data to any third party.",
   },
   {
+    title: "Data Sharing and Disclosure",
+    content:
+      "Pulse does not share, sell, rent, transfer, or otherwise disclose your account data, your website visitors' analytics data, or any Google user data accessed through our integrations to any third party for advertising, marketing, or any other unrelated purpose. We do not use this data to train AI or machine learning models, and we do not transfer it to any third-party AI or ML service. The only parties with limited access to data are the infrastructure and payment providers listed below, who process data solely on our behalf and are contractually restricted from using it for their own purposes: our cloud hosting provider, which stores data as part of running the service, and Paddle, our payment processor, which handles payment transactions as described in Section 5. We do not disclose data to any other party except where required by law.",
+  },
+  {
     title: "Data Retention",
     content:
       "Free plan analytics data is retained for 30 days. Pro plan analytics data is retained for 12 months. You may delete your account at any time, which permanently removes all associated data.",

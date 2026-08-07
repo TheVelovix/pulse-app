@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "pulse",
+    "name": "Pulse",
     "slug": "pulse",
     "version": "1.0.0",
     "orientation": "default",
@@ -12,12 +12,12 @@
       "bundleIdentifier": "com.velovix.pulse"
     },
     "android": {
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#000000"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.velovix.pulse",
-      "permissions": ["com.android.vending.BILLING"]
+      "package": "com.velovix.pulse"
     },
     "plugins": [
       "expo-router",
@@ -35,7 +35,7 @@
         "expo-secure-store",
         {
           "configureAndroidBackup": true,
-          "faceIDPermission": "llow $(PRODUCT_NAME) to access your Face ID biometric data."
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
         }
       ],
       "expo-font",

@@ -1,5 +1,8 @@
 import { sharedStyles } from "@/constants/commonStyles";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { normalizeOsKey, osIcons } from "@/lib/lib";
+import { Globe, GlobeIcon } from "phosphor-react-native";
+import { normalize } from "zod";
 
 export default function StatTable<T extends Record<string, string | number | boolean | null>>({
   title,
@@ -28,15 +31,28 @@ export default function StatTable<T extends Record<string, string | number | boo
             <ScrollView style={styles.body}>
               {items.map((item, i) => (
                 <View key={i} style={[styles.row, i !== items.length - 1 && styles.bodyRow]}>
-                  {columns.map(col => (
-                    <Text key={String(col.key)} style={[sharedStyles.labels, styles.cell]}>
-                      {col.key === "isSpider"
-                        ? item[col.key]
-                          ? "Yes"
-                          : "No"
-                        : String(item[col.key] ?? "-")}
-                    </Text>
-                  ))}
+                  {columns.map(col => {
+                    if (col.key === "os") console.log(col.label);
+                    const Icon =
+                      col.key === "os"
+                        ? (osIcons[normalizeOsKey(String(item[col.key]))] ?? GlobeIcon)
+                        : null;
+                    return (
+                      <View
+                        key={String(col.key)}
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        {Icon && <Icon color="white" />}
+                        <Text style={[sharedStyles.labels, styles.cell]}>
+                          {col.key === "isSpider"
+                            ? item[col.key]
+                              ? "Yes"
+                              : "No"
+                            : String(item[col.key] ?? "-")}
+                        </Text>
+                      </View>
+                    );
+                  })}
                 </View>
               ))}
             </ScrollView>
@@ -75,12 +91,13 @@ const styles = StyleSheet.create({
   },
   headerCell: {
     fontSize: 12,
-    minWidth: 120,
+    minWidth: 150,
     paddingRight: 16,
   },
   cell: {
     fontSize: 14,
-    minWidth: 120,
+    minWidth: 150,
+    maxWidth: 150,
     paddingRight: 16,
     paddingVertical: 8,
   },

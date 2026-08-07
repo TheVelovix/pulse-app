@@ -1,6 +1,13 @@
 import * as SecureStore from "expo-secure-store";
 import { router, useLocalSearchParams } from "expo-router";
 import { toast } from "sonner-native";
+import {
+  AppleLogoIcon,
+  WindowsLogoIcon,
+  LinuxLogoIcon,
+  AndroidLogoIcon,
+  GoogleChromeLogoIcon,
+} from "phosphor-react-native";
 
 export async function getTokens() {
   const [accessToken, refreshToken] = await Promise.all([
@@ -101,3 +108,50 @@ export function getFlagEmoji(countryCode: string): string {
 
   return String.fromCodePoint(...codePoints);
 }
+
+export function getFaviconUrl(referrerUrl: string, size = 64) {
+  const domain = new URL(referrerUrl).hostname;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`;
+}
+export function normalizeOsKey(raw: string): string {
+  const trimmed = raw.trim();
+
+  if (trimmed.startsWith("Mac OS X") || trimmed === "macOS") return "macOS";
+  if (trimmed.startsWith("iOS")) return "iOS";
+  if (trimmed.startsWith("Windows")) return "Windows"; // covers "Windows NT" too
+  if (trimmed.startsWith("Android")) return "Android";
+  if (trimmed === "Ubuntu") return "Ubuntu";
+  if (trimmed === "Chrome OS") return "ChromeOS";
+  if (trimmed === "Linux") return "Linux";
+
+  return trimmed;
+}
+export const osIcons: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  macOS: AppleLogoIcon,
+  iOS: AppleLogoIcon,
+  Windows: WindowsLogoIcon,
+  Linux: LinuxLogoIcon,
+  Ubuntu: LinuxLogoIcon,
+  Android: AndroidLogoIcon,
+  ChromeOS: GoogleChromeLogoIcon,
+};
+
+export function normalizeBrowserKey(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes("bot") || lower.includes("spider") || lower === "crawler") {
+    return "bot";
+  }
+  return raw.replace(/ mobile$/i, "");
+}
+// export const browserIcons: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+//   Chrome: SiGooglechrome,
+//   Firefox: SiFirefoxbrowser,
+//   Safari: SiSafari,
+//   Opera: SiOpera,
+//   Edge: FaEdge,
+//   IE: FaInternetExplorer,
+//   Brave: SiBrave,
+//   Vivaldi: SiVivaldi,
+//   "Samsung Internet": SiSamsung,
+//   bot: Bot,
+// };
