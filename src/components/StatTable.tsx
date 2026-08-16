@@ -32,7 +32,6 @@ export default function StatTable<T extends Record<string, string | number | boo
               {items.map((item, i) => (
                 <View key={i} style={[styles.row, i !== items.length - 1 && styles.bodyRow]}>
                   {columns.map(col => {
-                    if (col.key === "os") console.log(col.label);
                     const Icon =
                       col.key === "os"
                         ? (osIcons[normalizeOsKey(String(item[col.key]))] ?? GlobeIcon)

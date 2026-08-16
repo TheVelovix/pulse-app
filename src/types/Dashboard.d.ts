@@ -12,7 +12,7 @@ export interface NewProjectBody {
 }
 export interface NewProjectProps {
   isVisible: boolean;
-  onClose: (refetchProjects:boolean) => void;
+  onClose: (refetchProjects: boolean) => void;
 }
 export interface ProjectSettingsProps {
   isVisible: boolean;

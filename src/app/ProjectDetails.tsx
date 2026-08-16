@@ -1,5 +1,5 @@
 import { fetchWithAuth, getTokens, parseMonth, useTypedParams } from "@/lib/lib";
-import { AnalyticsResult, GoogleSearchConsoleData } from "@/types/Analytics";
+import { AnalyticsProject, AnalyticsResult, GoogleSearchConsoleData } from "@/types/Analytics";
 import { ProjectDetailsParams } from "@/types/NavParams";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -31,6 +31,19 @@ import SearchConsoleList from "@/components/SearchConsoleList";
 import ViewsChart from "@/components/ViewsChart";
 import { useTablet } from "@/context/TabletContext";
 
+async function getProjectDetails(id: string) {
+  try {
+    const res = await fetchWithAuth(`${process.env.EXPO_PUBLIC_BACKEND}/api/projects/${id}`);
+    if (!res.ok) {
+      toast.error("Failed to fetch project details.");
+      return;
+    }
+    const data = await res.json();
+    return data;
+  } catch {
+    toast.error("Failed to fetch project details.");
+  }
+}
 async function getProjectAnalytics(
   id: string,
   days?: number,
@@ -98,6 +111,7 @@ const DATE_RANGES = [
 ];
 export default function ProjectDetails() {
   const params = useTypedParams<ProjectDetailsParams>();
+  const [project, setProject] = useState<AnalyticsProject | undefined>(undefined);
   const [days, setDays] = useState<number | undefined>(30);
   const [from, setFrom] = useState<Date | undefined>(undefined);
   const [to, setTo] = useState<Date | undefined>(undefined);
@@ -130,9 +144,15 @@ export default function ProjectDetails() {
   const router = useRouter();
   useEffect(() => {
     startTransition(async () => {
-      const data = await getProjectAnalytics(params.id, days, from, to);
-      if (data) {
-        setAnalytics(data);
+      const [analytics, project] = await Promise.all([
+        getProjectAnalytics(params.id, days, from, to),
+        getProjectDetails(params.id),
+      ]);
+      if (analytics) {
+        setAnalytics(analytics);
+      }
+      if (project) {
+        setProject(project);
       }
     });
   }, [days, from, to]);
@@ -252,6 +272,10 @@ export default function ProjectDetails() {
   }, [params.id, refetchSearchConsoleData]);
   const [connectingGa, setConnectingGa] = useState(false);
   const importFromGa = useCallback(async () => {
+    if (project?.importedGa) {
+      toast.info("Already imported from Google Analytics");
+      return;
+    }
     setConnectingGa(true);
     try {
       const { accessToken } = await getTokens();
@@ -432,7 +456,7 @@ export default function ProjectDetails() {
             </Pressable>
           </Skeleton>
         )}
-        {session.user?.subscriptionPlan === SubscriptionPlan.PRO && (
+        {session.user?.subscriptionPlan === SubscriptionPlan.PRO && !project?.importedGa && (
           <Skeleton
             loading={loading}
             style={{ ...(loading ? styles.skeletonFrame : undefined), width: 80, maxHeight: 60 }}

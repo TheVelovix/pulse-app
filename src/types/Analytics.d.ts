@@ -1,3 +1,5 @@
+import { Project } from "./Dashboard";
+
 export interface AnalyticsResult {
   totalViews: number;
   viewsPerDay: DailyView[];
@@ -99,3 +101,6 @@ export type GoogleSearchConsoleData = {
   ctr: number;
   position: number;
 };
+export interface AnalyticsProject extends Project {
+  importedGa: boolean;
+}

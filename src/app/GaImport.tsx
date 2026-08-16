@@ -42,6 +42,13 @@ export default function GaImport() {
           },
         );
         if (!res.ok) {
+          if (res.status === 400) {
+            const text = await res.text();
+            if (text === "already-imported") {
+              toast.error("Analytics already imported for this project.");
+              return;
+            }
+          }
           toast.error("Import failed. Please try again.");
           return;
         }
@@ -93,7 +100,10 @@ export default function GaImport() {
               style={({ pressed }) => [
                 sharedStyles.cards,
                 styles.property,
-                selected && { borderColor: colors.accent, backgroundColor: colors.accentTransparent },
+                selected && {
+                  borderColor: colors.accent,
+                  backgroundColor: colors.accentTransparent,
+                },
                 pressed && { opacity: 0.7 },
               ]}
             >
