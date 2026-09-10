@@ -12,7 +12,7 @@
       "bundleIdentifier": "com.velovix.pulse"
     },
     "android": {
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "backgroundColor": "#000000"
       },
