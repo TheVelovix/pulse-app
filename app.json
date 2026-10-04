@@ -17,7 +17,12 @@
         "backgroundColor": "#000000"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.velovix.pulse"
+      "package": "com.velovix.pulse",
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -52,12 +57,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "7261c69f-4c3b-4f08-9f61-ea406c89793c"
-      }
     },
     "platforms": ["android"]
   }

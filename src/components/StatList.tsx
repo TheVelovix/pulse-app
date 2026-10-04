@@ -3,8 +3,21 @@ import { colors } from "@/constants/theme";
 import { getFaviconUrl } from "@/lib/lib";
 import { flag, name } from "country-emoji";
 import { GlobeIcon, Icon } from "phosphor-react-native";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Image, Platform, ScrollView, StyleSheet, Text, ToastAndroid, View } from "react-native";
+
+function Favicon({ referrerUrl, size = 16 }: { referrerUrl: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  const uri = getFaviconUrl(referrerUrl);
+
+  if (!uri || failed) {
+    return <GlobeIcon size={size} color={colors.textMuted} />;
+  }
+
+  return (
+    <Image source={{ uri }} style={{ width: size, height: size }} onError={() => setFailed(true)} />
+  );
+}
 
 export default function StatList({
   title,
@@ -26,10 +39,7 @@ export default function StatList({
       ) : (
         <ScrollView style={styles.list} nestedScrollEnabled>
           {items.map((item, i) => {
-            let ReferrerIcon: string | Icon | undefined;
-            if (title.includes("Referrers")) {
-              ReferrerIcon = getFaviconUrl(item.label) ?? GlobeIcon;
-            }
+            const isReferrers = title.includes("Referrers");
             return (
               <View key={i} style={styles.row}>
                 <View style={styles.barWrapper}>
@@ -39,7 +49,7 @@ export default function StatList({
                       { width: `${total > 0 ? (item.count / total) * 100 : 0}%` },
                     ]}
                   />
-                  {!title.includes("Referrers") ? (
+                  {!isReferrers ? (
                     <Text
                       onPress={() => showAndroidToast(item.label)}
                       style={[sharedStyles.labels, styles.label]}
@@ -50,19 +60,8 @@ export default function StatList({
                         : item.label}
                     </Text>
                   ) : (
-                    <View style={{ flexDirection: "row", paddingLeft: 5 }}>
-                      {ReferrerIcon ? (
-                        typeof ReferrerIcon === "string" ? (
-                          <Image
-                            src={getFaviconUrl(item.label)}
-                            style={{ width: 24, height: 24 }}
-                          />
-                        ) : (
-                          <ReferrerIcon />
-                        )
-                      ) : (
-                        <GlobeIcon />
-                      )}
+                    <View style={{ flexDirection: "row", alignItems: "center", paddingLeft: 5 }}>
+                      <Favicon referrerUrl={item.label} />
                       <Text
                         onPress={() => showAndroidToast(item.label)}
                         style={[sharedStyles.labels, styles.label]}

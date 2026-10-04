@@ -84,15 +84,6 @@ def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 android {
     ndkVersion rootProject.ext.ndkVersion
 
-    splits {
-        abi {
-            reset()
-            enable true
-            universalApk true
-            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-        }
-    }
-
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
@@ -113,21 +104,15 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-            if (project.hasProperty('PULSE_UPLOAD_STORE_FILE')) {
-                storeFile file(PULSE_UPLOAD_STORE_FILE)
-                storePassword PULSE_UPLOAD_STORE_PASSWORD
-                keyAlias PULSE_UPLOAD_KEY_ALIAS
-                keyPassword PULSE_UPLOAD_KEY_PASSWORD
-            }
-        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.release
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig signingConfigs.debug
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds

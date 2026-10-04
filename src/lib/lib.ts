@@ -8,6 +8,7 @@ import {
   AndroidLogoIcon,
   GoogleChromeLogoIcon,
 } from "phosphor-react-native";
+import { useState } from "react";
 
 export async function getTokens() {
   const [accessToken, refreshToken] = await Promise.all([
@@ -109,10 +110,15 @@ export function getFlagEmoji(countryCode: string): string {
   return String.fromCodePoint(...codePoints);
 }
 
-export function getFaviconUrl(referrerUrl: string, size = 64) {
-  const domain = new URL(referrerUrl).hostname;
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`;
+export function getFaviconUrl(referrerUrl: string): string | null {
+  try {
+    const domain = new URL(referrerUrl).hostname;
+    return `${process.env.EXPO_PUBLIC_BACKEND}/api/favicon?domain=${encodeURIComponent(domain)}`;
+  } catch {
+    return null;
+  }
 }
+
 export function normalizeOsKey(raw: string): string {
   const trimmed = raw.trim();
 
