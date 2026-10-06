@@ -12,7 +12,7 @@
       "bundleIdentifier": "com.velovix.pulse"
     },
     "android": {
-      "versionCode": 6,
+      "versionCode": 7,
       "adaptiveIcon": {
         "backgroundColor": "#000000"
       },
@@ -21,7 +21,9 @@
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "plugins": [
@@ -51,6 +53,15 @@
         "expo-screen-orientation",
         {
           "initialOrientation": "DEFAULT"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
         }
       ]
     ],

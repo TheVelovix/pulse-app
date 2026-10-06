@@ -92,10 +92,19 @@ android {
         applicationId 'com.velovix.pulse'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "1.0.0"
+        versionCode 8
+        versionName "1.0.1"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+    }
+    splits {
+        abi {
+            def isBundleBuild = gradle.startParameter.taskNames.any { it.toLowerCase().contains("bundle") }
+            enable !isBundleBuild
+            reset()
+            universalApk true
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
     }
     signingConfigs {
         debug {
@@ -104,22 +113,28 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (project.hasProperty('PULSE_UPLOAD_STORE_FILE')) {
+                storeFile file(PULSE_UPLOAD_STORE_FILE)
+                storePassword PULSE_UPLOAD_STORE_PASSWORD
+                keyAlias PULSE_UPLOAD_KEY_ALIAS
+                keyPassword PULSE_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
-        release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
-            def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
-            shrinkResources enableShrinkResources.toBoolean()
-            minifyEnabled enableMinifyInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
-            crunchPngs enablePngCrunchInRelease.toBoolean()
-        }
+    release {
+        signingConfig signingConfigs.release
+        def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
+        shrinkResources enableShrinkResources.toBoolean()
+        minifyEnabled enableMinifyInReleaseBuilds
+        proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
+        crunchPngs enablePngCrunchInRelease.toBoolean()
+    }
     }
     packagingOptions {
         jniLibs {
